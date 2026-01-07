@@ -16,5 +16,7 @@ export interface AchievementEvaluationResult {
   achieved: boolean;
   progress: number;
   achievementId: string;
+  achievementCode: string;
   playerId: string;
+  unlockedAt?: Date | null;
 }

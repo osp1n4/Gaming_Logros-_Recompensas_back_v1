@@ -12,8 +12,8 @@ import { AchievementRule } from './achievement.rule';
 export class TimePlayedRule extends AchievementRule {
   private readonly EVENT_TYPE = 'TIME_PLAYED';
 
-  canApply(achievement: Achievement): boolean {
-    return achievement.eventType === this.EVENT_TYPE;
+  canApply(eventType: string): boolean {
+    return eventType === this.EVENT_TYPE;
   }
 
   async evaluate(

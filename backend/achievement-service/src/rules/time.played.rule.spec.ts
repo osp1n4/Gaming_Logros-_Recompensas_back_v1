@@ -21,7 +21,7 @@ describe('TimePlayedRule', () => {
         requiredValue: 300,
       };
 
-      const result = rule.canApply(achievement as Achievement);
+      const result = rule.canApply('TIME_PLAYED');
 
       expect(result).toBe(true);
     });
@@ -32,7 +32,7 @@ describe('TimePlayedRule', () => {
         requiredValue: 10,
       };
 
-      const result = rule.canApply(achievement as Achievement);
+      const result = rule.canApply('MONSTER_KILLED');
 
       expect(result).toBe(false);
     });

@@ -101,13 +101,19 @@ describe('AchievementService', () => {
         progress: 1,
         unlockedAt: null,
       } as PlayerAchievement);
+      mockRepository.updatePlayerAchievementProgress.mockResolvedValue({
+        playerId: 'player-1',
+        achievementId: 'ach-1',
+        progress: 1,
+        unlockedAt: null,
+      } as PlayerAchievement);
 
       await service.evaluateEvent(event);
 
       expect(mockRepository.createPlayerAchievement).toHaveBeenCalledWith(
         'player-1',
         'ach-1',
-        1
+        0
       );
     });
 

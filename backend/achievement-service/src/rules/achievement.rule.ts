@@ -14,7 +14,7 @@ export interface IAchievementRule {
     playerAchievement: PlayerAchievement | null
   ): Promise<{ achieved: boolean; progress: number }>;
   
-  canApply(achievement: Achievement): boolean;
+  canApply(eventType: string): boolean;
 }
 
 /**
@@ -29,7 +29,7 @@ export abstract class AchievementRule implements IAchievementRule {
     playerAchievement: PlayerAchievement | null
   ): Promise<{ achieved: boolean; progress: number }>;
 
-  abstract canApply(achievement: Achievement): boolean;
+  abstract canApply(eventType: string): boolean;
 
   /**
    * Check if achievement is within temporal window
