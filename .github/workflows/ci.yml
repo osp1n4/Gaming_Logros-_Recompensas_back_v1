@@ -2,17 +2,13 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - develop
-      - main
-      - 'feature/**'
+    branches: [develop, main, 'feature/**']
   pull_request:
-    branches:
-      - develop
-      - main
+    branches: [develop, main]
 
 jobs:
-  build-and-test:
+  player-service:
+    name: Player Service Tests
     runs-on: ubuntu-latest
     
     strategy:
@@ -23,54 +19,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Debug - List repository structure
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
-          echo "Checking for microservices:"
-          [ -d "player-service" ] && echo "✓ player-service exists" || echo "✗ player-service missing"
-          [ -d "achievement-service" ] && echo "✓ achievement-service exists" || echo "✗ achievement-service missing"
-          [ -d "reward-service" ] && echo "✓ reward-service exists" || echo "✗ reward-service missing"
-      
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: backend/player-service/package-lock.json
       
-      - name: Install root dependencies
+      - name: Install dependencies
+        working-directory: backend/player-service
         run: npm ci
       
-      - name: Install all microservices dependencies
-        run: |
-          if [ -d "player-service" ]; then cd player-service && npm ci && cd ..; fi
-          if [ -d "achievement-service" ]; then cd achievement-service && npm ci && cd ..; fi
-          if [ -d "reward-service" ]; then cd reward-service && npm ci && cd ..; fi
+      - name: Run tests
+        working-directory: backend/player-service
+        run: npm test
       
-      - name: Run linter on all services
-        run: |
-          if [ -d "player-service" ]; then cd player-service && npm run lint && cd ..; fi
-          if [ -d "achievement-service" ]; then cd achievement-service && npm run lint && cd ..; fi
-          if [ -d "reward-service" ]; then cd reward-service && npm run lint && cd ..; fi
-        continue-on-error: true
+      - name: Generate coverage
+        working-directory: backend/player-service
+        run: npm run test:cov
       
-      - name: Build all services
-        run: |
-          if [ -d "player-service" ]; then cd player-service && npm run build && cd ..; fi
-          if [ -d "achievement-service" ]; then cd achievement-service && npm run build && cd ..; fi
-          if [ -d "reward-service" ]; then cd reward-service && npm run build && cd ..; fi
+      - name: Build
+        working-directory: backend/player-service
+        run: npm run build
       
-      - name: Run unit tests on all services
-        run: |
-          if [ -d "player-service" ]; then cd player-service && npm test && cd ..; fi
-          if [ -d "achievement-service" ]; then cd achievement-service && npm test && cd ..; fi
-          if [ -d "reward-service" ]; then cd reward-service && npm test && cd ..; fi
-      
-      - name: Generate test coverage
-        run: |
-          if [ -d "player-service" ]; then cd player-service && npm run test:cov && cd ..; fi
-          if [ -d "achievement-service" ]; then cd achievement-service && npm run test:cov && cd ..; fi
-          if [ -d "reward-service" ]; then cd reward-service && npm run test:cov && cd ..; fi
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/player-service/coverage/lcov.info
+          flags: player-service
         continue-on-error: true
