@@ -1,1 +1,191 @@
-# Gaming_Logros-_Recompensas_back_v1
+# 🕹️ Gaming - Sistema de Logros y Recompensas
+
+Sistema de microservicios para gestionar logros y recompensas en juegos, implementado con Node.js, TypeScript, NestJS y arquitectura event-driven.
+
+## 📋 Estado del Proyecto
+
+### ✅ Fase 2 - Player Service (COMPLETADA)
+
+**Fecha de Finalización:** Enero 2026  
+**Cobertura de Tests:** 82.97% ✅ (Objetivo: >70%)  
+**Tests Pasando:** 31/31 ✅  
+**Violaciones SOLID:** 0 ✅
+
+#### 🎯 Implementación Completada
+
+- ✅ Entidades TypeORM (Player)
+- ✅ DTOs con validación (CreatePlayerDto, GameEventDto)
+- ✅ Repository Pattern con interfaces
+- ✅ Service con lógica de negocio
+- ✅ Event Publisher para RabbitMQ
+- ✅ Controller REST API
+- ✅ Módulos NestJS configurados
+- ✅ Suite completa de tests unitarios
+
+#### 📊 Métricas de Calidad
+
+```
+Cobertura por Componente:
+- Controllers:   100%
+- DTOs:         100%
+- Entities:     100%
+- Events:       100%
+- Repositories:  95.83%
+- Services:      97.05%
+```
+
+#### 🏗️ Arquitectura
+
+El proyecto sigue principios SOLID y Clean Code:
+
+- **S (Single Responsibility)**: Cada clase tiene una única responsabilidad
+- **O (Open/Closed)**: Abierto a extensión, cerrado a modificación
+- **L (Liskov Substitution)**: Uso de interfaces para sustituibilidad
+- **I (Interface Segregation)**: Interfaces específicas (IPlayerRepository, IEventPublisher)
+- **D (Dependency Inversion)**: Dependencia de abstracciones, no concreciones
+
+## 🚀 Inicio Rápido
+
+### Player Service
+
+```bash
+cd backend/player-service
+npm install
+npm test          # Ejecutar tests
+npm run test:cov  # Ver cobertura
+npm run dev       # Modo desarrollo
+```
+
+## 📦 Stack Tecnológico
+
+### Backend
+- Node.js 20+
+- TypeScript 5.0
+- NestJS 10.0
+- TypeORM
+
+### Base de Datos
+- PostgreSQL 15
+
+### Mensajería
+- RabbitMQ 3.12
+
+### Testing
+- Jest 29.5
+- Test Coverage >70%
+- TDD Methodology
+
+### Contenedores
+- Docker / Podman
+- Docker Compose
+
+## 📁 Estructura del Proyecto
+
+```
+Gaming_Logros-_Recompensas_back_v1/
+├── backend/
+│   ├── player-service/           ✅ COMPLETADO
+│   │   ├── src/
+│   │   │   ├── controllers/      # REST endpoints
+│   │   │   ├── services/         # Business logic
+│   │   │   ├── repositories/     # Data access
+│   │   │   ├── entities/         # TypeORM entities
+│   │   │   ├── dtos/             # Data validation
+│   │   │   ├── events/           # RabbitMQ publishers
+│   │   │   ├── interfaces/       # SOLID abstractions
+│   │   │   └── modules/          # NestJS modules
+│   │   ├── coverage/             # Test coverage reports
+│   │   └── package.json
+│   ├── achievement-service/      🔜 PRÓXIMAMENTE
+│   └── reward-service/           🔜 PRÓXIMAMENTE
+├── docs/
+│   └── player-service/
+│       └── FASE2_COMPLETADA.md   # Reporte detallado
+└── plan_implementacion_logros_gaming.md
+
+```
+
+## 🧪 Testing
+
+El proyecto implementa **Test-Driven Development (TDD)** estricto:
+
+1. **RED** ❌: Escribir tests que fallen
+2. **GREEN** ✅: Implementar código mínimo para pasar tests
+3. **REFACTOR** 🔧: Optimizar manteniendo tests verdes
+
+### Ejecutar Tests
+
+```bash
+# Player Service
+cd backend/player-service
+npm test                    # Todos los tests
+npm run test:watch         # Watch mode
+npm run test:cov           # Con cobertura
+npm run test:debug         # Debug mode
+```
+
+## 📚 Documentación
+
+- [Plan de Implementación](plan_implementacion_logros_gaming.md) - Plan completo por fases
+- [Fase 2 Completada](docs/player-service/FASE2_COMPLETADA.md) - Reporte detallado
+- [Backend Structure](ESTRUCTURA_DETALLADA.md) - Arquitectura detallada
+
+## 🔄 Workflow Git
+
+El proyecto utiliza **Gitflow** con commits convencionales TDD:
+
+```bash
+# Ciclo TDD
+git commit -m "test: add failing test for [feature] (RED)"
+git commit -m "feat: implement [feature] to pass tests (GREEN)"
+git commit -m "refactor: optimize [component] logic (REFACTOR)"
+```
+
+### Ramas Actuales
+
+- `main` - Producción
+- `develop` - Desarrollo
+- `feature/player_service` - ✅ Player Service implementado
+
+## 🎯 Próximos Pasos
+
+### Fase 3 - Achievement Service
+- [ ] Implementar Observer Pattern
+- [ ] Motor de reglas de logros
+- [ ] Consumer RabbitMQ
+- [ ] Tests con >70% cobertura
+
+### Fase 4 - Reward Service
+- [ ] Implementar Strategy Pattern
+- [ ] Estrategias de recompensas
+- [ ] Cálculo de rewards
+- [ ] Tests con >70% cobertura
+
+### Fase 5 - Integración
+- [ ] Tests E2E
+- [ ] Docker Compose completo
+- [ ] Validación flujo completo
+
+## 👥 Contribución
+
+El proyecto sigue estándares estrictos:
+
+- ✅ TDD obligatorio (Red → Green → Refactor)
+- ✅ Cobertura >70% en lógica de negocio
+- ✅ 0 violaciones a principios SOLID
+- ✅ Clean Code (nombres descriptivos, funciones pequeñas)
+- ✅ Conventional Commits
+
+## 📄 Licencia
+
+Este proyecto es parte de un ejercicio de entrenamiento en desarrollo nativo con IA.
+
+## 🔗 Enlaces
+
+- Repositorio: https://github.com/osp1n4/Gaming_Logros-_Recompensas_back_v1
+- Pull Request Fase 2: [Ver PR](https://github.com/osp1n4/Gaming_Logros-_Recompensas_back_v1/pull/new/feature/player_service)
+
+---
+
+**Última actualización:** Enero 2026  
+**Estado:** ✅ Fase 2 completada con 82.97% de cobertura
