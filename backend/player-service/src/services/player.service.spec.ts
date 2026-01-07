@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PlayerService } from './player.service';
 import { IPlayerRepository } from '../interfaces/player-repository.interface';
 import { IEventPublisher } from '../interfaces/event-publisher.interface';
-import { CreatePlayerDto, GameEventDto, GameEventType } from '../dtos/player.dto';
+import { CreatePlayerDto, GameEventDto, GameEventType, UpdatePlayerDto } from '../dtos/player.dto';
 import { Player } from '../entities/player.entity';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
@@ -271,6 +271,80 @@ describe('PlayerService', () => {
 
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockPlayers);
+    });
+  });
+
+  describe('updatePlayer', () => {
+    const existing: Player = {
+      id: 'id-1',
+      username: 'olduser',
+      email: 'old@example.com',
+      monstersKilled: 0,
+      timePlayed: 0,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should update username and email successfully', async () => {
+      mockRepository.findById.mockResolvedValue(existing);
+      mockRepository.findByUsername.mockResolvedValue(null);
+      mockRepository.findByEmail.mockResolvedValue(null);
+
+      const updated: Player = { ...existing, username: 'newuser', email: 'new@example.com' };
+      mockRepository.update.mockResolvedValue(updated);
+
+      const dto: UpdatePlayerDto = { username: 'newuser', email: 'new@example.com' };
+      const result = await service.updatePlayer('id-1', dto);
+
+      expect(result).toEqual(updated);
+      expect(mockRepository.update).toHaveBeenCalledWith('id-1', 'newuser', 'new@example.com');
+    });
+
+    it('should throw NotFound when player does not exist', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+      await expect(service.updatePlayer('missing', { username: 'x' })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw Conflict when username already exists', async () => {
+      mockRepository.findById.mockResolvedValue(existing);
+      mockRepository.findByUsername.mockResolvedValue({ ...existing, id: 'other' });
+
+      await expect(service.updatePlayer('id-1', { username: 'taken' })).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw Conflict when email already exists', async () => {
+      mockRepository.findById.mockResolvedValue(existing);
+      mockRepository.findByUsername.mockResolvedValue(null);
+      mockRepository.findByEmail.mockResolvedValue({ ...existing, id: 'other' });
+
+      await expect(service.updatePlayer('id-1', { email: 'taken@example.com' })).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('deletePlayer', () => {
+    it('should delete player successfully', async () => {
+      const existing: Player = {
+        id: 'id-1',
+        username: 'u',
+        email: 'e@e.com',
+        monstersKilled: 0,
+        timePlayed: 0,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockRepository.findById.mockResolvedValue(existing);
+      mockRepository.delete.mockResolvedValue();
+
+      await service.deletePlayer('id-1');
+      expect(mockRepository.delete).toHaveBeenCalledWith('id-1');
+    });
+
+    it('should throw NotFound when deleting non-existent player', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+      await expect(service.deletePlayer('missing')).rejects.toThrow(NotFoundException);
     });
   });
 });

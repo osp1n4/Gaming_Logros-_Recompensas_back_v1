@@ -196,6 +196,62 @@ describe('PlayerRepository', () => {
     });
   });
 
+  describe('update', () => {
+    it('should update username and/or email', async () => {
+      const existing: Player = {
+        id: 'id-1',
+        username: 'old',
+        email: 'old@example.com',
+        monstersKilled: 0,
+        timePlayed: 0,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const saved: Player = { ...existing, username: 'new', email: 'new@example.com' };
+
+      mockTypeOrmRepository.findOne.mockResolvedValue(existing);
+      mockTypeOrmRepository.save.mockResolvedValue(saved);
+
+      const result = await playerRepository.update('id-1', 'new', 'new@example.com');
+
+      expect(result).toEqual(saved);
+      expect(mockTypeOrmRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw when player not found', async () => {
+      mockTypeOrmRepository.findOne.mockResolvedValue(null);
+      await expect(playerRepository.update('missing', 'a', 'b@c.com')).rejects.toThrow('Player not found');
+    });
+  });
+
+  describe('delete', () => {
+    it('should soft delete player', async () => {
+      const existing: Player = {
+        id: 'id-1',
+        username: 'u',
+        email: 'e@e.com',
+        monstersKilled: 0,
+        timePlayed: 0,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockTypeOrmRepository.findOne.mockResolvedValue(existing);
+      mockTypeOrmRepository.save.mockResolvedValue({ ...existing, isActive: false });
+
+      await playerRepository.delete('id-1');
+      expect(mockTypeOrmRepository.save).toHaveBeenCalledWith(expect.objectContaining({ isActive: false }));
+    });
+
+    it('should throw when player not found', async () => {
+      mockTypeOrmRepository.findOne.mockResolvedValue(null);
+      await expect(playerRepository.delete('missing')).rejects.toThrow('Player not found');
+    });
+  });
+
   describe('findAll', () => {
     it('should return all active players', async () => {
       const mockPlayers: Player[] = [
