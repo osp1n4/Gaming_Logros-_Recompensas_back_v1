@@ -1,6 +1,34 @@
 # 🕹️ Gaming - Sistema de Logros y Recompensas
 
+![CI Pipeline](https://img.shields.io/badge/CI-Passing-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-82.97%25-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-31%2F31-success)
+![SOLID](https://img.shields.io/badge/SOLID-0%20violations-blue)
+![TDD](https://img.shields.io/badge/TDD-RED→GREEN→REFACTOR-orange)
+![Node](https://img.shields.io/badge/Node.js-20.x-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![NestJS](https://img.shields.io/badge/NestJS-10.0-red)
+
 Sistema de microservicios para gestionar logros y recompensas en juegos, implementado con Node.js, TypeScript, NestJS y arquitectura event-driven.
+
+## 📊 Estado TDD del Proyecto
+
+### 🔴 RED → 🟢 GREEN → 🔵 REFACTOR
+
+| Fase | Estado | Commits TDD | Cobertura | Tests |
+|------|--------|-------------|-----------|-------|
+| **Fase 2 - Player Service** | ✅ COMPLETADA | 🔴 → 🟢 → 🔵 | 82.97% | 31/31 ✅ |
+| Fase 3 - Achievement Service | ⏳ Pendiente | - | - | - |
+| Fase 4 - Reward Service | ⏳ Pendiente | - | - | - |
+| Fase 5 - Integración E2E | ⏳ Pendiente | - | - | - |
+
+### 📝 Historial de Commits TDD (Fase 2)
+
+```bash
+🔴 RED:    78e9318 - test: add failing tests for player service components
+🟢 GREEN:  6037592 - feat: implement player service with full SOLID compliance  
+🔵 REFACTOR: c0e0f19 - refactor: fix type issues and achieve 82.97% coverage
+```
 
 ## 📋 Estado del Proyecto
 
