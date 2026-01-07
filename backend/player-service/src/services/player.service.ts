@@ -1,7 +1,7 @@
 import { Injectable, Inject, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IPlayerRepository } from '../interfaces/player-repository.interface';
 import { IEventPublisher } from '../interfaces/event-publisher.interface';
-import { CreatePlayerDto, GameEventDto, GameEventType, PlayerResponseDto } from '../dtos/player.dto';
+import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, GameEventType, PlayerResponseDto } from '../dtos/player.dto';
 import { Player } from '../entities/player.entity';
 
 /**
@@ -98,6 +98,49 @@ export class PlayerService {
    */
   async getAllPlayers(): Promise<Player[]> {
     return this.playerRepository.findAll();
+  }
+
+  /**
+   * Updates an existing player
+   */
+  async updatePlayer(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+    const { username, email } = updatePlayerDto;
+
+    // Verify player exists
+    const player = await this.playerRepository.findById(id);
+    if (!player) {
+      throw new NotFoundException(`Player with id ${id} not found`);
+    }
+
+    // Check username uniqueness if updating
+    if (username && username !== player.username) {
+      const existingUsername = await this.playerRepository.findByUsername(username);
+      if (existingUsername) {
+        throw new ConflictException('Username already exists');
+      }
+    }
+
+    // Check email uniqueness if updating
+    if (email && email !== player.email) {
+      const existingEmail = await this.playerRepository.findByEmail(email);
+      if (existingEmail) {
+        throw new ConflictException('Email already exists');
+      }
+    }
+
+    return this.playerRepository.update(id, username, email);
+  }
+
+  /**
+   * Deletes a player (soft delete)
+   */
+  async deletePlayer(id: string): Promise<void> {
+    const player = await this.playerRepository.findById(id);
+    if (!player) {
+      throw new NotFoundException(`Player with id ${id} not found`);
+    }
+
+    await this.playerRepository.delete(id);
   }
 }
 

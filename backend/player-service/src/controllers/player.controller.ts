@@ -1,6 +1,6 @@
-import { Controller, Post, Get, Body, Param, ValidationPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Put, Get, Delete, Body, Param, ValidationPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { PlayerService } from '../services/player.service';
-import { CreatePlayerDto, GameEventDto, PlayerResponseDto } from '../dtos/player.dto';
+import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, PlayerResponseDto } from '../dtos/player.dto';
 import { Player } from '../entities/player.entity';
 
 /**
@@ -14,10 +14,10 @@ export class PlayerController {
   constructor(private readonly playerService: PlayerService) {}
 
   /**
-   * POST /players
+   * PUT /players
    * Register a new player
    */
-  @Post()
+  @Put()
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body(ValidationPipe) createPlayerDto: CreatePlayerDto,
@@ -53,6 +53,29 @@ export class PlayerController {
   @Get()
   async getAllPlayers(): Promise<Player[]> {
     return this.playerService.getAllPlayers();
+  }
+
+  /**
+   * POST /players/:id
+   * Update player information
+   */
+  @Post(':id')
+  @HttpCode(HttpStatus.OK)
+  async updatePlayer(
+    @Param('id') id: string,
+    @Body(ValidationPipe) updatePlayerDto: UpdatePlayerDto,
+  ): Promise<Player> {
+    return this.playerService.updatePlayer(id, updatePlayerDto);
+  }
+
+  /**
+   * DELETE /players/:id
+   * Delete a player (soft delete)
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePlayer(@Param('id') id: string): Promise<void> {
+    return this.playerService.deletePlayer(id);
   }
 }
 

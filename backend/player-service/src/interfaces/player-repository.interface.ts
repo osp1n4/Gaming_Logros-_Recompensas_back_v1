@@ -11,5 +11,7 @@ export interface IPlayerRepository {
   findByEmail(email: string): Promise<Player | null>;
   updateMonsterKills(playerId: string, increment: number): Promise<Player>;
   updateTimePlayed(playerId: string, increment: number): Promise<Player>;
+  update(id: string, username?: string, email?: string): Promise<Player>;
+  delete(id: string): Promise<void>;
   findAll(): Promise<Player[]>;
 }

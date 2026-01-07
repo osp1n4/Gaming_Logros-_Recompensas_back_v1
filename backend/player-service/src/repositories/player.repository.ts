@@ -60,5 +60,29 @@ export class PlayerRepository implements IPlayerRepository {
   async findAll(): Promise<Player[]> {
     return this.repository.find({ where: { isActive: true } });
   }
+
+  async update(id: string, username?: string, email?: string): Promise<Player> {
+    const player = await this.findById(id);
+    
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    if (username) player.username = username;
+    if (email) player.email = email;
+    
+    return this.repository.save(player);
+  }
+
+  async delete(id: string): Promise<void> {
+    const player = await this.findById(id);
+    
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    player.isActive = false;
+    await this.repository.save(player);
+  }
 }
 

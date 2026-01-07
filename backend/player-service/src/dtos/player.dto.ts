@@ -18,6 +18,17 @@ export class CreatePlayerDto {
   email: string;
 }
 
+export class UpdatePlayerDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
+  username?: string;
+
+  @IsEmail()
+  @MaxLength(100)
+  email?: string;
+}
+
 export class PlayerResponseDto {
   id: string;
   username: string;

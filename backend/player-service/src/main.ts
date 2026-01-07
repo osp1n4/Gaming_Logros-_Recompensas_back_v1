@@ -20,11 +20,24 @@ async function bootstrap() {
   // Enable CORS for development
   app.enableCors();
 
-  // Initialize Event Publisher
-  const eventPublisher = app.get<EventPublisher>('IEventPublisher');
-  await eventPublisher.connect();
+  const portEnv = process.env.PORT;
+  const port = portEnv ? parseInt(portEnv, 10) : 3001;
+  
+  console.log(`📌 Environment PORT=${portEnv}, Using port ${port}`);
+  
+  try {
+    // Initialize Event Publisher
+    const eventPublisher = app.get<EventPublisher>('IEventPublisher');
+    console.log('📡 Initializing Event Publisher...');
+    await eventPublisher.connect();
+    console.log('✅ Event Publisher connected to RabbitMQ');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn('⚠️ Warning: Could not connect to RabbitMQ:', errorMessage);
+    console.warn('Service will continue without event publishing');
+  }
 
-  const port = process.env.PORT || 3001;
+  console.log(`🎮 Player Service is starting on port ${port}...`);
   await app.listen(port);
   
   console.log(`🎮 Player Service is running on port ${port}`);
