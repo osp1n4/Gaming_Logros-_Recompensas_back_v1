@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for Player Service
+  postgres-player:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: player_user
+      POSTGRES_PASSWORD: player_password
+      POSTGRES_DB: player_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-player-data:/var/lib/postgresql/data
+
+  # PostgreSQL for Achievement Service
+  postgres-achievement:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: achievement_user
+      POSTGRES_PASSWORD: achievement_password
+      POSTGRES_DB: achievement_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-achievement-data:/var/lib/postgresql/data
+
+  # PostgreSQL for Reward Service
+  postgres-reward:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: reward_user
+      POSTGRES_PASSWORD: reward_password
+      POSTGRES_DB: reward_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-reward-data:/var/lib/postgresql/data
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"  # AMQP
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  # Player Service
+  player-service:
+    build:
+      context: ./player-service
+      dockerfile: Containerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DB_HOST=postgres-player
+      - DB_PORT=5432
+      - DB_USERNAME=player_user
+      - DB_PASSWORD=player_password
+      - DB_NAME=player_db
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres-player
+      - rabbitmq
+
+  # Achievement Service
+  achievement-service:
+    build:
+      context: ./achievement-service
+      dockerfile: Containerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DB_HOST=postgres-achievement
+      - DB_PORT=5432
+      - DB_USERNAME=achievement_user
+      - DB_PASSWORD=achievement_password
+      - DB_NAME=achievement_db
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres-achievement
+      - rabbitmq
+
+  # Reward Service
+  reward-service:
+    build:
+      context: ./reward-service
+      dockerfile: Containerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - DB_HOST=postgres-reward
+      - DB_PORT=5432
+      - DB_USERNAME=reward_user
+      - DB_PASSWORD=reward_password
+      - DB_NAME=reward_db
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres-reward
+      - rabbitmq
+
+volumes:
+  postgres-player-data:
+  postgres-achievement-data:
+  postgres-reward-data:
+  rabbitmq-data:
+
+networks:
+  default:
+    name: gaming-network

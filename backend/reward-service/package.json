@@ -1,0 +1,25 @@
+{
+  "name": "reward-service",
+  "version": "1.0.0",
+  "description": "Reward service for gaming achievements system",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node src/main.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "amqplib": "^0.10.0",
+    "pg": "^8.10.0",
+    "reflect-metadata": "^0.1.13",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
