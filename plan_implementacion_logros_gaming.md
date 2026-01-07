@@ -73,11 +73,15 @@ Gestionar jugadores y emitir eventos del juego.
 ### Metodología TDD
 - **Red**: Escribir tests para registro de jugadores antes de implementar.
   - Commit: "test: add failing test for player registration"
+  - Push: `git push` al repositorio remoto
 - **Green**: Implementar lógica mínima para pasar tests.
   - Commit: "feat: implement player registration to pass tests"
+  - Push: `git push` al repositorio remoto
 - **Refactor**: Optimizar código manteniendo tests en verde.
   - Commit: "refactor: optimize player registration logic"
+  - Push: `git push` al repositorio remoto
 - **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+  - **Después de cada paso**: Ejecutar `git push` para sincronizar con GitHub.
 - **Cobertura**: Controllers, Services, Repositories, Event Publishers.
 - **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Services).
 
@@ -121,11 +125,15 @@ Evaluar reglas y desbloquear logros.
 ### Metodología TDD
 - **Red**: Escribir tests para evaluación de reglas antes de implementar.
   - Commit: "test: add failing test for achievement rule evaluation"
+  - Push: `git push` al repositorio remoto
 - **Green**: Implementar lógica de evaluación para pasar tests.
   - Commit: "feat: implement achievement rule evaluation"
+  - Push: `git push` al repositorio remoto
 - **Refactor**: Optimizar motor de reglas manteniendo tests verdes.
   - Commit: "refactor: optimize achievement rules engine"
+  - Push: `git push` al repositorio remoto
 - **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+  - **Después de cada paso**: Ejecutar `git push` para sincronizar con GitHub.
 - **Cobertura**: Achievement Rules, Listeners, Services, Repositories.
 - **Tests específicos**: Prevención de duplicados, ventanas temporales.
 - **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Rules, Services).
@@ -167,11 +175,15 @@ Otorgar recompensas asociadas a logros.
 ### Metodología TDD
 - **Red**: Escribir tests para estrategias de recompensa antes de implementar.
   - Commit: "test: add failing test for reward strategy"
+  - Push: `git push` al repositorio remoto
 - **Green**: Implementar estrategias (Fixed, Dynamic, Bonus) para pasar tests.
   - Commit: "feat: implement reward strategy [strategy-name]"
+  - Push: `git push` al repositorio remoto
 - **Refactor**: Optimizar estrategias manteniendo tests verdes.
   - Commit: "refactor: optimize reward strategy logic"
+  - Push: `git push` al repositorio remoto
 - **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+  - **Después de cada paso**: Ejecutar `git push` para sincronizar con GitHub.
 - **Cobertura**: Reward Strategies, Listeners, Services, Repositories.
 - **Tests específicos**: Cálculo de recompensas, actualización de balances.
 - **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Strategies, Services).
@@ -208,11 +220,15 @@ Validar el funcionamiento end-to-end.
 ### Metodología TDD - Tests de Integración
 - **Red**: Escribir tests E2E que fallen inicialmente.
   - Commit: "test: add failing E2E test for complete flow"
+  - Push: `git push` al repositorio remoto
 - **Green**: Implementar integración para pasar tests E2E.
   - Commit: "feat: integrate services for E2E flow"
+  - Push: `git push` al repositorio remoto
 - **Refactor**: Optimizar comunicación entre servicios.
   - Commit: "refactor: optimize inter-service communication"
+  - Push: `git push` al repositorio remoto
 - **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+  - **Después de cada paso**: Ejecutar `git push` para sincronizar con GitHub.
 - **Tests E2E**: Flujo completo desde evento hasta recompensa.
 - **Tests de Contrato**: Validar comunicación entre servicios.
 - **Tests de Resiliencia**: Manejo de errores y reintentos.
