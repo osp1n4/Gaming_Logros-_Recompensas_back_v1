@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IAchievementRepository } from '../interfaces/achievement-repository.interface';
 import { AchievementRule } from '../rules/achievement.rule';
 import { PlayerEvent, AchievementEvaluationResult } from '../interfaces/event.interface';
+import { Achievement } from '../entities/achievement.entity';
 import { PlayerAchievement } from '../entities/player.achievement';
 
 /**
@@ -26,72 +27,112 @@ export class AchievementService {
     const results: AchievementEvaluationResult[] = [];
 
     // Get applicable rules for this event type
-    const applicableRules = this.rules.filter((rule) =>
-      rule.canApply(event.eventType),
-    );
+    const applicableRules = this.getApplicableRules(event.eventType);
 
     for (const achievement of achievements) {
-      for (const rule of applicableRules) {
-        // Get or create player achievement progress
-        let playerAchievement = await this.repository.findPlayerAchievement(
-          event.playerId,
-          achievement.id,
-        );
+      const evaluationResults = await this.evaluateAchievementForEvent(
+        event,
+        achievement,
+        applicableRules,
+      );
+      results.push(...evaluationResults);
+    }
 
-        if (!playerAchievement) {
-          playerAchievement = await this.repository.createPlayerAchievement(
-            event.playerId,
-            achievement.id,
-            0,
-          );
-        }
+    return results;
+  }
 
-        // Skip if already unlocked (prevent duplicate progression)
-        if (playerAchievement.unlockedAt) {
-          continue;
-        }
+  /**
+   * Evaluate a single achievement against all applicable rules
+   */
+  private async evaluateAchievementForEvent(
+    event: PlayerEvent,
+    achievement: Achievement,
+    rules: AchievementRule[],
+  ): Promise<AchievementEvaluationResult[]> {
+    const results: AchievementEvaluationResult[] = [];
 
-        // Evaluate rule
-        const evaluationResult = await rule.evaluate(
-          event,
-          achievement,
-          playerAchievement,
-        );
-
-        // Update progress
-        const updated = await this.repository.updatePlayerAchievementProgress(
-          event.playerId,
-          achievement.id,
-          evaluationResult.progress,
-        );
-
-        // Unlock if condition met
-        if (evaluationResult.achieved) {
-          const unlocked = await this.repository.unlockPlayerAchievement(
-            event.playerId,
-            achievement.id,
-          );
-          results.push({
-            playerId: event.playerId,
-            achievementId: achievement.id,
-            achievementCode: achievement.code,
-            progress: unlocked.progress,
-            achieved: true,
-            unlockedAt: unlocked.unlockedAt,
-          });
-        } else {
-          results.push({
-            playerId: event.playerId,
-            achievementId: achievement.id,
-            achievementCode: achievement.code,
-            progress: updated.progress,
-            achieved: false,
-          });
-        }
+    for (const rule of rules) {
+      const result = await this.evaluateRuleForAchievement(event, achievement, rule);
+      if (result) {
+        results.push(result);
       }
     }
 
     return results;
+  }
+
+  /**
+   * Evaluate a specific rule for an achievement
+   */
+  private async evaluateRuleForAchievement(
+    event: PlayerEvent,
+    achievement: Achievement,
+    rule: AchievementRule,
+  ): Promise<AchievementEvaluationResult | null> {
+    // Get or create player achievement progress
+    let playerAchievement = await this.repository.findPlayerAchievement(
+      event.playerId,
+      achievement.id,
+    );
+
+    if (!playerAchievement) {
+      playerAchievement = await this.repository.createPlayerAchievement(
+        event.playerId,
+        achievement.id,
+        0,
+      );
+    }
+
+    // Skip if already unlocked (prevent duplicate progression)
+    if (playerAchievement.unlockedAt) {
+      return null;
+    }
+
+    // Evaluate rule
+    const evaluationResult = await rule.evaluate(
+      event,
+      achievement,
+      playerAchievement,
+    );
+
+    // Update progress
+    const updated = await this.repository.updatePlayerAchievementProgress(
+      event.playerId,
+      achievement.id,
+      evaluationResult.progress,
+    );
+
+    // Unlock if condition met
+    if (evaluationResult.achieved) {
+      const unlocked = await this.repository.unlockPlayerAchievement(
+        event.playerId,
+        achievement.id,
+      );
+      return {
+        playerId: event.playerId,
+        achievementId: achievement.id,
+        achievementCode: achievement.code,
+        progress: unlocked.progress,
+        achieved: true,
+        unlockedAt: unlocked.unlockedAt,
+      };
+    }
+
+    return {
+      playerId: event.playerId,
+      achievementId: achievement.id,
+      achievementCode: achievement.code,
+      progress: updated.progress,
+      achieved: false,
+    };
+  }
+
+  /**
+   * Get applicable rules for an event type
+   * SOLID Principle O: Open/Closed - extensible by adding new rules without modifying service
+   */
+  private getApplicableRules(eventType: string): AchievementRule[] {
+    return this.rules.filter((rule) => rule.canApply(eventType));
   }
 
   /**
