@@ -24,6 +24,8 @@ describe('PlayerService', () => {
       findByEmail: jest.fn(),
       updateMonsterKills: jest.fn(),
       updateTimePlayed: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
       findAll: jest.fn(),
     };
 
