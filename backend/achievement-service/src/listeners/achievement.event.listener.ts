@@ -43,19 +43,11 @@ export class AchievementEventListener {
    */
   async handlePlayerEventMessage(message: any): Promise<any[]> {
     try {
-      // If message has content buffer (RabbitMQ format), parse it; otherwise use as-is
-      let event: PlayerEvent;
-      
-      if (message.content && typeof message.content.toString === 'function') {
-        // RabbitMQ message format
-        event = JSON.parse(message.content.toString());
-      } else {
-        // Direct object format (for testing or direct calls)
-        event = message as PlayerEvent;
-      }
+      // Parse message to extract PlayerEvent
+      const event = this.parsePlayerEvent(message);
 
       // Validate required fields
-      if (!event.playerId || !event.eventType) {
+      if (!this.isValidEvent(event)) {
         console.warn('Invalid message format - missing required fields');
         return [];
       }
@@ -66,5 +58,26 @@ export class AchievementEventListener {
       console.error('Error parsing message:', error);
       return [];
     }
+  }
+
+  /**
+   * Extracts PlayerEvent from message (RabbitMQ format or direct object)
+   * @private
+   */
+  private parsePlayerEvent(message: any): PlayerEvent {
+    if (message.content && typeof message.content.toString === 'function') {
+      // RabbitMQ message format
+      return JSON.parse(message.content.toString());
+    }
+    // Direct object format (for testing or direct calls)
+    return message as PlayerEvent;
+  }
+
+  /**
+   * Validates that event has required fields
+   * @private
+   */
+  private isValidEvent(event: PlayerEvent): boolean {
+    return !!(event && event.playerId && event.eventType);
   }
 }
