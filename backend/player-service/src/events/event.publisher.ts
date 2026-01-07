@@ -12,8 +12,8 @@ import { IEventPublisher } from '../interfaces/event-publisher.interface';
  */
 @Injectable()
 export class EventPublisher implements IEventPublisher {
-  private connection: amqp.Connection | null = null;
-  private channel: amqp.Channel | null = null;
+  private connection: any = null;
+  private channel: any = null;
   private readonly exchangeName = 'player.events';
 
   constructor(private readonly rabbitMqUrl: string) {}

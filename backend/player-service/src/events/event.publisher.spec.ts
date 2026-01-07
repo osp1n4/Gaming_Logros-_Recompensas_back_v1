@@ -11,20 +11,20 @@ jest.mock('amqplib');
 
 describe('EventPublisher', () => {
   let eventPublisher: EventPublisher;
-  let mockConnection: jest.Mocked<amqp.Connection>;
-  let mockChannel: jest.Mocked<amqp.Channel>;
+  let mockConnection: any;
+  let mockChannel: any;
 
   beforeEach(() => {
     mockChannel = {
       assertExchange: jest.fn().mockResolvedValue(undefined),
       publish: jest.fn().mockReturnValue(true),
       close: jest.fn().mockResolvedValue(undefined),
-    } as any;
+    };
 
     mockConnection = {
       createChannel: jest.fn().mockResolvedValue(mockChannel),
       close: jest.fn().mockResolvedValue(undefined),
-    } as any;
+    };
 
     (amqp.connect as jest.Mock).mockResolvedValue(mockConnection);
 
