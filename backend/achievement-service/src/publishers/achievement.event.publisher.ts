@@ -36,26 +36,9 @@ export class AchievementEventPublisher {
         return;
       }
 
-      const channel = await this.amqpConnection.createChannel();
-
-      // Ensure exchange exists
-      await channel.assertExchange(this.EXCHANGE_NAME, this.EXCHANGE_TYPE, {
-        durable: true,
-      });
-
-      // Build event message
+      // Build and publish event
       const event = this.buildAchievementUnlockedEvent(result, metadata);
-
-      // Publish message
-      channel.publish(
-        this.EXCHANGE_NAME,
-        this.ROUTING_KEY,
-        Buffer.from(JSON.stringify(event)),
-        {
-          persistent: true,
-          contentType: 'application/json',
-        },
-      );
+      await this.publishToExchange(event);
     } catch (error) {
       // Log error but don't throw - allow service to continue
       console.error('Error publishing achievement.unlocked event:', error);
@@ -99,5 +82,29 @@ export class AchievementEventPublisher {
     }
 
     return event;
+  }
+
+  /**
+   * Publish event to RabbitMQ exchange
+   * @private
+   */
+  private async publishToExchange(event: Record<string, any>): Promise<void> {
+    const channel = await this.amqpConnection.createChannel();
+
+    // Ensure exchange exists
+    await channel.assertExchange(this.EXCHANGE_NAME, this.EXCHANGE_TYPE, {
+      durable: true,
+    });
+
+    // Publish message to exchange
+    channel.publish(
+      this.EXCHANGE_NAME,
+      this.ROUTING_KEY,
+      Buffer.from(JSON.stringify(event)),
+      {
+        persistent: true,
+        contentType: 'application/json',
+      },
+    );
   }
 }
