@@ -70,10 +70,32 @@ Gestionar jugadores y emitir eventos del juego.
 - `player.event.monster_killed`
 - `player.event.time_played`
 
+### Metodología TDD
+- **Red**: Escribir tests para registro de jugadores antes de implementar.
+  - Commit: "test: add failing test for player registration"
+- **Green**: Implementar lógica mínima para pasar tests.
+  - Commit: "feat: implement player registration to pass tests"
+- **Refactor**: Optimizar código manteniendo tests en verde.
+  - Commit: "refactor: optimize player registration logic"
+- **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+- **Cobertura**: Controllers, Services, Repositories, Event Publishers.
+- **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Services).
+
+### Código Limpio y Principios SOLID
+- **0 violaciones a principios SOLID**:
+  - **S**: Single Responsibility - Cada clase una sola responsabilidad.
+  - **O**: Open/Closed - Abierto a extensión, cerrado a modificación.
+  - **L**: Liskov Substitution - Subclases sustituibles por clases base.
+  - **I**: Interface Segregation - Interfaces específicas, no genéricas.
+  - **D**: Dependency Inversion - Depender de abstracciones, no de concreciones.
+- **Clean Code**: Nombres descriptivos, funciones pequeñas, sin duplicación.
+
 ### Entregables
 - Player Service funcional.
 - Eventos publicados correctamente.
 - Persistencia básica en PostgreSQL.
+- **Suite de tests unitarios y de integración.**
+- **Reporte de cobertura de código >70%.**
 
 ---
 
@@ -96,9 +118,32 @@ Evaluar reglas y desbloquear logros.
 - Consumidos: `player.event.*`
 - Emitidos: `achievement.unlocked`
 
+### Metodología TDD
+- **Red**: Escribir tests para evaluación de reglas antes de implementar.
+  - Commit: "test: add failing test for achievement rule evaluation"
+- **Green**: Implementar lógica de evaluación para pasar tests.
+  - Commit: "feat: implement achievement rule evaluation"
+- **Refactor**: Optimizar motor de reglas manteniendo tests verdes.
+  - Commit: "refactor: optimize achievement rules engine"
+- **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+- **Cobertura**: Achievement Rules, Listeners, Services, Repositories.
+- **Tests específicos**: Prevención de duplicados, ventanas temporales.
+- **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Rules, Services).
+
+### Código Limpio y Principios SOLID
+- **0 violaciones a principios SOLID**:
+  - **S**: Cada regla de logro en su propia clase.
+  - **O**: Motor de reglas extensible sin modificar código existente.
+  - **L**: Todas las reglas intercambiables por la interfaz base.
+  - **I**: Interfaces específicas para evaluación, listeners, storage.
+  - **D**: Servicios dependen de interfaces, no de implementaciones.
+- **Clean Code**: Reglas legibles, evaluación clara, sin lógica duplicada.
+
 ### Entregables
 - Achievement Service funcional.
 - Logros evaluados y almacenados.
+- **Tests de reglas de logros y listeners.**
+- **Reporte de cobertura de código >70%.**
 
 ---
 
@@ -119,9 +164,32 @@ Otorgar recompensas asociadas a logros.
 ### Eventos Consumidos
 - `achievement.unlocked`
 
+### Metodología TDD
+- **Red**: Escribir tests para estrategias de recompensa antes de implementar.
+  - Commit: "test: add failing test for reward strategy"
+- **Green**: Implementar estrategias (Fixed, Dynamic, Bonus) para pasar tests.
+  - Commit: "feat: implement reward strategy [strategy-name]"
+- **Refactor**: Optimizar estrategias manteniendo tests verdes.
+  - Commit: "refactor: optimize reward strategy logic"
+- **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+- **Cobertura**: Reward Strategies, Listeners, Services, Repositories.
+- **Tests específicos**: Cálculo de recompensas, actualización de balances.
+- **Tests Unitarios**: Cobertura mayor a 70% en lógica de negocio (Strategies, Services).
+
+### Código Limpio y Principios SOLID
+- **0 violaciones a principios SOLID**:
+  - **S**: Cada estrategia en su propia clase con responsabilidad única.
+  - **O**: Sistema de estrategias extensible mediante Strategy Pattern.
+  - **L**: Todas las estrategias sustituibles por interfaz común.
+  - **I**: Interfaces segregadas para cálculo, asignación, persistencia.
+  - **D**: RewardService depende de IRewardStrategy, no de clases concretas.
+- **Clean Code**: Cálculos explícitos, nombres descriptivos, sin condicionales anidados.
+
 ### Entregables
 - Reward Service funcional.
 - Recompensas persistidas.
+- **Tests de estrategias y asignación de recompensas.**
+- **Reporte de cobertura de código >70%.**
 
 ---
 
@@ -137,10 +205,35 @@ Validar el funcionamiento end-to-end.
 - Manejo básico de errores.
 - Verificación de persistencia.
 
+### Metodología TDD - Tests de Integración
+- **Red**: Escribir tests E2E que fallen inicialmente.
+  - Commit: "test: add failing E2E test for complete flow"
+- **Green**: Implementar integración para pasar tests E2E.
+  - Commit: "feat: integrate services for E2E flow"
+- **Refactor**: Optimizar comunicación entre servicios.
+  - Commit: "refactor: optimize inter-service communication"
+- **Ciclo estricto**: Seguir Red → Green → Refactor sin saltarse pasos.
+- **Tests E2E**: Flujo completo desde evento hasta recompensa.
+- **Tests de Contrato**: Validar comunicación entre servicios.
+- **Tests de Resiliencia**: Manejo de errores y reintentos.
+- **Cobertura**: Flujos completos, casos edge, escenarios de fallo.
+- **Tests Unitarios**: Cobertura global mayor a 70% en todos los servicios.
+
+### Código Limpio y Principios SOLID
+- **Validación de 0 violaciones SOLID en integración**:
+  - **S**: Cada orquestador con responsabilidad específica.
+  - **O**: Comunicación extensible sin modificar servicios base.
+  - **L**: Contratos respetados entre todos los servicios.
+  - **I**: APIs de integración claras y específicas.
+  - **D**: Servicios acoplados por interfaces, no por implementaciones.
+- **Clean Code**: Manejo de errores claro, logging consistente, retry patterns.
+
 ### Entregables
 - Sistema integrado.
 - Evidencias de pruebas.
 - Diagramas actualizados.
+- **Suite completa de tests E2E y de integración.**
+- **Reporte de cobertura consolidado >70%.**
 
 ---
 
@@ -199,3 +292,14 @@ Mejorar mantenibilidad y presentación del proyecto.
 - Git
 - REST API
 - JSON
+
+## Testing
+- Jest (Framework de testing)
+- Supertest (Tests E2E)
+- TDD (Test-Driven Development)
+
+## Principios y Buenas Prácticas
+- **SOLID Principles** (0 violaciones permitidas)
+- **Clean Code** (Código limpio y legible)
+- **DRY** (Don't Repeat Yourself)
+- **KISS** (Keep It Simple, Stupid)
