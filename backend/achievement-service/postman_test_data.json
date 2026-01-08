@@ -1,0 +1,299 @@
+{
+  "info": {
+    "name": "Achievement Service - Test Data",
+    "description": "10 predefined achievements for testing Achievement Service in Postman",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Achievement 1 - First Blood",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"FIRST_BLOOD\",\n  \"titleKey\": \"achievement.first_blood.title\",\n  \"descriptionKey\": \"achievement.first_blood.description\",\n  \"requiredValue\": 1,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 2 - Monster Slayer 10",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"MONSTER_SLAYER_10\",\n  \"titleKey\": \"achievement.monster_slayer_10.title\",\n  \"descriptionKey\": \"achievement.monster_slayer_10.description\",\n  \"requiredValue\": 10,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 3 - Monster Slayer 50",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"MONSTER_SLAYER_50\",\n  \"titleKey\": \"achievement.monster_slayer_50.title\",\n  \"descriptionKey\": \"achievement.monster_slayer_50.description\",\n  \"requiredValue\": 50,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 4 - Monster Slayer 100",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"MONSTER_SLAYER_100\",\n  \"titleKey\": \"achievement.monster_slayer_100.title\",\n  \"descriptionKey\": \"achievement.monster_slayer_100.description\",\n  \"requiredValue\": 100,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 5 - Time Played 1H",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TIME_PLAYED_1H\",\n  \"titleKey\": \"achievement.time_played_1h.title\",\n  \"descriptionKey\": \"achievement.time_played_1h.description\",\n  \"requiredValue\": 60,\n  \"eventType\": \"TIME_PLAYED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 6 - Time Played 5H",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TIME_PLAYED_5H\",\n  \"titleKey\": \"achievement.time_played_5h.title\",\n  \"descriptionKey\": \"achievement.time_played_5h.description\",\n  \"requiredValue\": 300,\n  \"eventType\": \"TIME_PLAYED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 7 - Time Played 10H",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TIME_PLAYED_10H\",\n  \"titleKey\": \"achievement.time_played_10h.title\",\n  \"descriptionKey\": \"achievement.time_played_10h.description\",\n  \"requiredValue\": 600,\n  \"eventType\": \"TIME_PLAYED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 8 - Weekend Warrior",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"WEEKEND_WARRIOR\",\n  \"titleKey\": \"achievement.weekend_warrior.title\",\n  \"descriptionKey\": \"achievement.weekend_warrior.description\",\n  \"requiredValue\": 20,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": true,\n  \"temporalWindowStart\": \"2025-12-01T00:00:00Z\",\n  \"temporalWindowEnd\": \"2025-12-15T23:59:59Z\",\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 9 - Speed Racer",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"SPEED_RACER\",\n  \"titleKey\": \"achievement.speed_racer.title\",\n  \"descriptionKey\": \"achievement.speed_racer.description\",\n  \"requiredValue\": 30,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": true,\n  \"temporalWindowStart\": \"2026-01-05T00:00:00Z\",\n  \"temporalWindowEnd\": \"2026-01-10T23:59:59Z\",\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Achievement 10 - Legendary Hunter",
+      "event": [],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"LEGENDARY_HUNTER\",\n  \"titleKey\": \"achievement.legendary_hunter.title\",\n  \"descriptionKey\": \"achievement.legendary_hunter.description\",\n  \"requiredValue\": 500,\n  \"eventType\": \"MONSTER_KILLED\",\n  \"isTemporal\": false,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/achievements",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3002",
+          "path": [
+            "api",
+            "achievements"
+          ]
+        }
+      }
+    }
+  ]
+}

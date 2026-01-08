@@ -31,6 +31,7 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   console.log(`🎯 Achievement Service is running on: http://0.0.0.0:${port}/api`);
   console.log(`📊 Health check: http://0.0.0.0:${port}/api/health`);
+  console.log(`💡 Tip: Run seed-achievements.ps1 to populate initial test data`);
 }
 
 bootstrap();

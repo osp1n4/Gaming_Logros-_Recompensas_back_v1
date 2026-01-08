@@ -194,3 +194,110 @@ ac 10: cobertura de pruebas automatizadas
 dado que el servicio debe mantener alta calidad de código,
 cuando se ejecuta la suite de pruebas con npm run test:cov,
 entonces la cobertura de código debe ser mayor al 70% en statements, branches y lines; las pruebas deben cubrir controllers, services, repositories, event listeners/publishers y reglas de logro (strategy) siguiendo TDD.
+
+---
+
+## historia de usuario 4: reward service - asignación de recompensas basada en estrategias
+
+título sugerido: Asignación Flexible de Recompensas mediante Estrategias Configurables
+
+historia de usuario:
+
+como administrador del sistema de logros,
+quiero que el Reward Service asigne recompensas de forma flexible mediante estrategias configurables cuando un jugador desbloquee un logro,
+para otorgar monedas y puntos según reglas de negocio personalizables (fijas, dinámicas o con bonificación), mantener un registro de balance por jugador y permitir consultas del historial de recompensas.
+
+descripción y contexto:
+El Reward Service es el microservicio responsable de:
+- consumir eventos `achievement.unlocked` desde RabbitMQ publicados por el Achievement Service,
+- calcular recompensas mediante el patrón Strategy, soportando al menos tres estrategias: Fixed (montos constantes), Dynamic (escalado basado en balance actual del jugador), y Bonus (multiplicador configurable por variable de entorno),
+- persistir las recompensas otorgadas y actualizar el balance acumulado de cada jugador (totalCoins, totalPoints),
+- exponer una API REST para asignar recompensas manualmente, consultar historial de recompensas por jugador y obtener el balance actual.
+Sigue principios SOLID con inyección de dependencias, Strategy Pattern para el cálculo de recompensas, separación de responsabilidades entre controladores, servicios, repositorios, estrategias y listeners. La persistencia se realiza con TypeORM en PostgreSQL (entidades Reward y PlayerBalance). El servicio se despliega como contenedor Docker con configuración por variables de entorno, incluyendo el prefijo global de API `/api` y binding a `0.0.0.0`.
+
+criterios de aceptación (ac):
+
+ac 1: asignación manual de recompensas mediante api rest
+
+dado que se requiere otorgar una recompensa a un jugador,
+cuando se envía una solicitud POST /api/rewards/assign con playerId, achievementId y strategy (fixed, dynamic o bonus),
+entonces el sistema selecciona la estrategia indicada, calcula la recompensa correspondiente (coins y points), crea un registro de recompensa con tipo, monto y fecha de asignación, actualiza el balance del jugador sumando los valores calculados, persiste ambos cambios en PostgreSQL, y devuelve el objeto Reward creado con código HTTP 201 Created.
+
+ac 2: consumo automático de eventos achievement.unlocked
+
+dado que el Achievement Service publica un evento `achievement.unlocked` en RabbitMQ con {playerId, achievementId, timestamp},
+cuando el Reward Service consume el evento,
+entonces el sistema asigna automáticamente una recompensa utilizando la estrategia por defecto (fixed), actualiza el balance del jugador, persiste los cambios, y realiza acknowledge (ACK) del mensaje para confirmar el procesamiento exitoso.
+
+ac 3: estrategia fixed - recompensa fija
+
+dado que se asigna una recompensa con estrategia "fixed",
+cuando el sistema calcula la recompensa,
+entonces devuelve montos constantes definidos (100 coins y 50 points), sin considerar el balance previo del jugador, garantizando valores predecibles y consistentes.
+
+ac 4: estrategia dynamic - escalado por balance
+
+dado que se asigna una recompensa con estrategia "dynamic",
+cuando el sistema calcula la recompensa,
+entonces devuelve un monto base (50 coins y 25 points) más un 1% del balance actual del jugador (Math.floor(totalCoins * 0.01) y Math.floor(totalPoints * 0.01)), incentivando el progreso acumulado del jugador.
+
+ac 5: estrategia bonus - multiplicador configurable
+
+dado que se asigna una recompensa con estrategia "bonus",
+cuando el sistema calcula la recompensa,
+entonces lee la variable de entorno BONUS_MULTIPLIER (por defecto 2), multiplica los valores base (100 coins y 50 points) por el multiplicador, y devuelve el resultado (por defecto 200 coins y 100 points), permitiendo ajustes dinámicos sin redespliegue.
+
+ac 6: consulta de historial de recompensas de un jugador
+
+dado que se requiere visualizar el historial completo de recompensas de un jugador,
+cuando se envía una solicitud GET /api/rewards/players/:playerId,
+entonces el sistema devuelve todas las recompensas del jugador con playerId, achievementId, rewardType, rewardAmount, awardedAt e isClaimed, ordenadas por fecha de asignación, con código HTTP 200.
+
+ac 7: consulta de balance actual de un jugador
+
+dado que se requiere conocer el balance acumulado de un jugador,
+cuando se envía una solicitud GET /api/rewards/balance/:playerId,
+entonces el sistema devuelve el objeto PlayerBalance con totalCoins, totalPoints, playerId y updatedAt, creando un registro con valores en cero si el jugador no tiene balance previo, con código HTTP 200.
+
+ac 8: consulta de todas las recompensas del sistema
+
+dado que se requiere auditar o visualizar todas las recompensas otorgadas,
+cuando se envía una solicitud GET /api/rewards,
+entonces el sistema devuelve la lista completa de recompensas registradas en el sistema con todos sus campos, con código HTTP 200.
+
+ac 9: actualización transaccional de balance
+
+dado que el sistema asigna una recompensa y actualiza el balance del jugador,
+cuando se ejecuta la operación de asignación,
+entonces el sistema garantiza atomicidad transaccional: si falla la persistencia de la recompensa o la actualización del balance, toda la operación se revierte (rollback), evitando inconsistencias entre las entidades Reward y PlayerBalance.
+
+ac 10: manejo de estrategias inexistentes
+
+dado que se intenta asignar una recompensa con una estrategia no registrada,
+cuando el sistema busca la estrategia en el mapa de estrategias y no la encuentra,
+entonces lanza una excepción con mensaje descriptivo "Unknown reward strategy: [nombre]", devuelve código HTTP 400 Bad Request, y no persiste ningún cambio.
+
+ac 11: manejo de errores y validaciones
+
+dado que se reciben datos inválidos o se producen errores de persistencia/conexión,
+cuando el servicio procesa un evento o atiende una solicitud HTTP,
+entonces devuelve códigos HTTP apropiados (400 Bad Request para datos inválidos, 404 Not Found para recursos inexistentes, 500 Internal Server Error para errores del servidor), incluye mensajes descriptivos en el cuerpo de la respuesta, registra los errores para trazabilidad, y realiza negative acknowledge (NACK) en RabbitMQ para reintentar eventos fallidos.
+
+ac 12: idempotencia y prevención de duplicados
+
+dado que el sistema recibe múltiples veces el mismo evento achievement.unlocked debido a reintentos o errores de red,
+cuando se procesa el evento repetido,
+entonces el sistema implementa mecanismos para detectar duplicados (por ejemplo, validando combinaciones únicas de playerId + achievementId + timestamp o usando identificadores de mensaje), evita crear recompensas duplicadas, y mantiene la integridad del balance del jugador.
+
+ac 13: extensibilidad del sistema de estrategias
+
+dado que se requiere agregar nuevas estrategias de recompensa en el futuro,
+cuando se desarrolla una nueva estrategia,
+entonces el sistema permite extender la funcionalidad implementando la interfaz RewardStrategy, registrando la nueva estrategia en el mapa del servicio, sin modificar el código existente de otras estrategias ni del RewardService (cumpliendo Open/Closed Principle).
+
+ac 14: cobertura de pruebas automatizadas
+
+dado que el servicio debe mantener alta calidad de código,
+cuando se ejecuta la suite de pruebas con npm run test:cov,
+entonces la cobertura de código debe ser mayor al 70% en statements, branches y lines, todas las pruebas unitarias deben pasar exitosamente, y los tests deben cubrir controllers, services, repositories, event listeners, y todas las estrategias de recompensa (fixed, dynamic, bonus) siguiendo metodología TDD con ciclos Red-Green-Refactor.
+
