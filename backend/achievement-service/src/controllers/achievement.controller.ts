@@ -4,10 +4,18 @@ import { IAchievementRepository } from '../interfaces/achievement-repository.int
 
 /**
  * Achievement Controller
+ * 
+ * REST API endpoints for Achievement Service
  * SOLID Principles Application:
  * - Single Responsibility: Only handles HTTP requests and responses for achievements
- * - Dependency Inversion: Depends on AchievementService abstraction (injected)
+ * - Dependency Inversion: Depends on AchievementService and IAchievementRepository abstractions
  * - Open/Closed: Easy to add new endpoints without modifying service logic
+ * 
+ * Endpoints:
+ * - GET  /achievements                                    - Get all achievements
+ * - GET  /achievements/players/:playerId                  - Get player's achievements with progress
+ * - GET  /achievements/players/:playerId/:achievementId/progress - Get specific achievement progress
+ * - POST /achievements/initialize/:playerId               - Initialize achievements for new player
  */
 @Controller('achievements')
 export class AchievementController {
