@@ -112,3 +112,85 @@ ac 10: cobertura de pruebas automatizadas
 dado que el servicio debe mantener alta calidad de código,
 cuando se ejecuta la suite de pruebas con npm run test:cov,
 entonces la cobertura de código debe ser mayor al 70% en statements, branches y lines, todas las pruebas unitarias deben pasar exitosamente, y los tests deben cubrir controllers, services, repositories y event publishers siguiendo metodología TDD.
+
+---
+
+## historia de usuario 3: achievement service - evaluación de eventos y gestión de logros
+
+título sugerido: Asignación y Progreso de Logros Basada en Eventos
+
+historia de usuario:
+
+como administrador del sistema de logros,
+quiero que el Achievement Service evalúe eventos del jugador (MONSTER_KILLED, TIME_PLAYED) publicados en RabbitMQ y gestione el catálogo de logros,
+para asignar logros de forma idempotente, calcular su progreso y permitir consultas del catálogo y los logros de cada jugador.
+
+descripción y contexto:
+El Achievement Service es el microservicio responsable de:
+- consumir eventos del jugador desde RabbitMQ (colas definidas en el sistema),
+- evaluar reglas de logros contra un catálogo persistido en PostgreSQL,
+- asignar logros de forma idempotente y calcular su progreso,
+- exponer una API REST para consultar el catálogo de logros y el estado de los logros por jugador.
+Sigue principios SOLID, con separación entre controladores, servicios, repositorios, entidades y reglas (strategy/rule pattern). La persistencia se realiza con TypeORM y las reglas incluyen al menos MONSTER_KILLED y TIME_PLAYED. El servicio se despliega en Docker y utiliza configuración por variables de entorno, incluyendo el prefijo global de API `/api` y binding a `0.0.0.0`.
+
+criterios de aceptación (ac):
+
+ac 1: consumo de eventos y evaluación de reglas
+
+dado que el Player Service publica un evento válido en RabbitMQ (playerId, eventType, value),
+cuando el Achievement Service consume el evento,
+entonces aplica la regla correspondiente (por ejemplo, MONSTER_KILLED o TIME_PLAYED), actualiza el progreso del logro o lo desbloquea si cumple los requisitos, y persiste los cambios en PostgreSQL.
+
+ac 2: idempotencia en asignación de logros
+
+dado que un jugador cumple repetidamente los criterios de un mismo logro,
+cuando el sistema intenta asignar el logro que ya fue desbloqueado anteriormente,
+entonces el servicio no crea duplicados, mantiene una única relación jugador-logro, y solo actualiza el progreso si aplica.
+
+ac 3: consulta de catálogo de logros
+
+dado que se requiere listar los logros disponibles,
+cuando se envía una solicitud GET /api/achievements,
+entonces el servicio devuelve el catálogo con código, nombre, descripción y tipo de cálculo (por ejemplo, por conteo de monstruos o por tiempo de juego), con código HTTP 200.
+
+ac 4: consulta de logros de un jugador
+
+dado que se requiere visualizar los logros de un jugador específico,
+cuando se envía una solicitud GET /api/achievements/players/:playerId,
+entonces el servicio devuelve los logros del jugador con su estado actual (desbloqueado/progreso), incluyendo `progress` y fechas relevantes, con código HTTP 200.
+
+ac 5: consulta de progreso de un logro específico
+
+dado que se requiere obtener el progreso de un logro para un jugador,
+cuando se envía una solicitud GET /api/achievements/players/:playerId/:achievementId/progress,
+entonces el servicio devuelve el objeto de progreso con sus campos actuales (por ejemplo, `progress`, `isUnlocked`, `updatedAt`) con código HTTP 200, o HTTP 404 si no existe.
+
+ac 6: persistencia y consistencia transaccional
+
+dado que el servicio procesa eventos y actualiza múltiples entidades (logros y progreso de jugador),
+cuando se realiza la operación de evaluación y asignación,
+entonces el sistema persiste los cambios de manera transaccional, garantizando consistencia incluso bajo concurrencia.
+
+ac 7: manejo de errores y validaciones
+
+dado que se reciben eventos inválidos o se producen errores de persistencia/conexión,
+cuando el servicio procesa el evento o atiende una solicitud HTTP,
+entonces devuelve códigos HTTP apropiados (400/404/409/500 según el caso), registra el error para trazabilidad y reintenta la conexión a RabbitMQ cuando sea necesario.
+
+ac 8: publicación de eventos de logro desbloqueado (opcional)
+
+dado que un logro ha sido desbloqueado para un jugador,
+cuando el servicio confirma la asignación,
+entonces puede publicar un evento `achievement.unlocked` con `{playerId, achievementId, timestamp}` para consumo por el Reward Service u otros componentes, asegurando desac acoplamiento.
+
+ac 9: internacionalización y metadatos
+
+dado que el sistema debe soportar múltiples idiomas,
+cuando se consultan los logros,
+entonces el servicio devuelve claves de idioma para `nameKey` y `descriptionKey` y metadatos del logro para que el cliente resuelva los textos internacionalizados.
+
+ac 10: cobertura de pruebas automatizadas
+
+dado que el servicio debe mantener alta calidad de código,
+cuando se ejecuta la suite de pruebas con npm run test:cov,
+entonces la cobertura de código debe ser mayor al 70% en statements, branches y lines; las pruebas deben cubrir controllers, services, repositories, event listeners/publishers y reglas de logro (strategy) siguiendo TDD.
