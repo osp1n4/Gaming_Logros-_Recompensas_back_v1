@@ -1,27 +1,27 @@
 import { RewardStrategy, RewardComputation } from './reward.strategy';
 import { RewardType } from '../entities/reward.entity';
 
+const DYNAMIC_BASE_COINS = 50;
+const DYNAMIC_BASE_POINTS = 25;
+const DYNAMIC_SCALE_FACTOR = 0.01; // 1% of current balance
+
 export class DynamicRewardStrategy implements RewardStrategy {
   computeReward(
     playerId: string,
     achievementId: string,
     playerBalance?: { totalCoins: number; totalPoints: number }
   ): RewardComputation {
-    const baseCoins = 50;
-    const basePoints = 25;
-    const scaleFactor = 0.01; // 1% of current balance
-
     const bonusCoins = playerBalance 
-      ? Math.floor(playerBalance.totalCoins * scaleFactor) 
+      ? Math.floor(playerBalance.totalCoins * DYNAMIC_SCALE_FACTOR) 
       : 0;
     const bonusPoints = playerBalance 
-      ? Math.floor(playerBalance.totalPoints * scaleFactor) 
+      ? Math.floor(playerBalance.totalPoints * DYNAMIC_SCALE_FACTOR) 
       : 0;
 
     return {
       type: RewardType.COINS,
-      amount: baseCoins + bonusCoins,
-      points: basePoints + bonusPoints,
+      amount: DYNAMIC_BASE_COINS + bonusCoins,
+      points: DYNAMIC_BASE_POINTS + bonusPoints,
     };
   }
 }
