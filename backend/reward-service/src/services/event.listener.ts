@@ -45,24 +45,27 @@ export class EventListener implements OnModuleInit {
       this.queueName,
       async (msg: any) => {
         if (!msg) return;
-
-        try {
-          const event: AchievementUnlockedEvent = JSON.parse(msg.content.toString());
-          this.logger.log(`Received event: ${JSON.stringify(event)}`);
-
-          await this.rewardService.assignReward(
-            event.playerId,
-            event.achievementId,
-            'fixed',
-          );
-
-          this.channel.ack(msg);
-          this.logger.log('Event processed successfully');
-        } catch (error) {
-          this.logger.error('Error processing event', error);
-          this.channel.nack(msg, false, true);
-        }
+        await this.handleMessage(msg);
       },
     );
+  }
+
+  private async handleMessage(msg: any): Promise<void> {
+    try {
+      const event: AchievementUnlockedEvent = JSON.parse(msg.content.toString());
+      this.logger.log(`Received event: ${JSON.stringify(event)}`);
+
+      await this.rewardService.assignReward(
+        event.playerId,
+        event.achievementId,
+        'fixed',
+      );
+
+      this.channel.ack(msg);
+      this.logger.log('Event processed successfully');
+    } catch (error) {
+      this.logger.error('Error processing event', error);
+      this.channel.nack(msg, false, true);
+    }
   }
 }
