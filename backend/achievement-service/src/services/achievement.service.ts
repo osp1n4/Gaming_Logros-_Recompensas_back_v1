@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { IAchievementRepository } from '../interfaces/achievement-repository.interface';
 import { AchievementRule } from '../rules/achievement.rule';
 import { PlayerEvent, AchievementEvaluationResult } from '../interfaces/event.interface';
@@ -13,7 +13,9 @@ import { PlayerAchievement } from '../entities/player.achievement';
 @Injectable()
 export class AchievementService {
   constructor(
+    @Inject('IAchievementRepository')
     private readonly repository: IAchievementRepository,
+    @Inject('ACHIEVEMENT_RULES')
     private readonly rules: AchievementRule[],
   ) {}
 

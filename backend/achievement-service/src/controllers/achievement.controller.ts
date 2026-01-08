@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post, Inject } from '@nestjs/common';
 import { AchievementService } from '../services/achievement.service';
 import { IAchievementRepository } from '../interfaces/achievement-repository.interface';
 
@@ -21,6 +21,7 @@ import { IAchievementRepository } from '../interfaces/achievement-repository.int
 export class AchievementController {
   constructor(
     private readonly achievementService: AchievementService,
+    @Inject('IAchievementRepository')
     private readonly achievementRepository: IAchievementRepository,
   ) {}
 
