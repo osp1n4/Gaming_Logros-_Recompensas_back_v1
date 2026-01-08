@@ -15,19 +15,26 @@ import { TimePlayedRule } from '../rules/time.played.rule';
 /**
  * Achievement Module
  * 
+ * Central configuration module for Achievement Service
+ * 
  * SOLID Principles Application:
  * - Single Responsibility: Only configures and wires achievement-related components
  * - Dependency Inversion: All dependencies injected through constructor
- * - Open/Closed: Easy to add new rules without modifying this module
+ * - Open/Closed: Easy to add new rules without modifying module structure
  * 
- * Wires together:
- * - Entities (Achievement, PlayerAchievement)
- * - Repository (AchievementRepository)
- * - Rules (MonsterKillRule, TimePlayedRule)
- * - Service (AchievementService)
- * - Listeners (AchievementEventListener)
- * - Publishers (AchievementEventPublisher)
- * - Controller (AchievementController)
+ * Architecture:
+ * 1. Entities: Achievement, PlayerAchievement (TypeORM)
+ * 2. Repository: AchievementRepository (Data persistence layer)
+ * 3. Rules: MonsterKillRule, TimePlayedRule (Business logic)
+ * 4. Service: AchievementService (Orchestration layer)
+ * 5. Listeners: AchievementEventListener (Event consumption from RabbitMQ)
+ * 6. Publishers: AchievementEventPublisher (Event publication to RabbitMQ)
+ * 7. Controller: AchievementController (REST API endpoints)
+ * 
+ * Dependencies:
+ * - TypeORM for database operations
+ * - RabbitMQ for event-driven communication
+ * - NestJS for dependency injection and module wiring
  */
 @Module({
   imports: [
