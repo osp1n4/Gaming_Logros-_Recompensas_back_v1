@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { AchievementController } from './achievement.controller';
 import { AchievementService } from '../services/achievement.service';
+import { IAchievementRepository } from '../interfaces/achievement-repository.interface';
 import { Achievement } from '../entities/achievement.entity';
-import { AchievementEvaluationResult } from '../interfaces/event.interface';
 
 describe('AchievementController', () => {
   let controller: AchievementController;
   let mockAchievementService: any;
+  let mockAchievementRepository: any;
 
   beforeEach(async () => {
     // Mock AchievementService
@@ -16,17 +16,16 @@ describe('AchievementController', () => {
       getPlayerAchievements: jest.fn(),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [AchievementController],
-      providers: [
-        {
-          provide: AchievementService,
-          useValue: mockAchievementService,
-        },
-      ],
-    }).compile();
+    // Mock AchievementRepository
+    mockAchievementRepository = {
+      findAll: jest.fn(),
+    };
 
-    controller = module.get<AchievementController>(AchievementController);
+    // Create controller directly without TestingModule for simpler mocking
+    controller = new AchievementController(
+      mockAchievementService,
+      mockAchievementRepository,
+    );
   });
 
   describe('getAchievements', () => {
@@ -54,13 +53,11 @@ describe('AchievementController', () => {
         },
       ];
 
-      mockAchievementService.initializeAchievements.mockResolvedValue(
-        mockAchievements,
-      );
+      mockAchievementRepository.findAll.mockResolvedValue(mockAchievements);
 
       const result = await controller.getAchievements();
 
-      expect(mockAchievementService.initializeAchievements).toHaveBeenCalled();
+      expect(mockAchievementRepository.findAll).toHaveBeenCalled();
       expect(result).toEqual(mockAchievements);
     });
   });
@@ -165,29 +162,18 @@ describe('AchievementController', () => {
 
   describe('initializeAchievements', () => {
     it('should initialize achievements and return success message', async () => {
-      const mockAchievements = [
-        {
-          id: 'ach-1',
-          code: 'FIRST_KILL',
-          titleKey: 'achievement.first_kill.title',
-          descriptionKey: 'achievement.first_kill.description',
-          requiredValue: 1,
-          eventType: 'MONSTER_KILLED',
-          isTemporal: false,
-          isActive: true,
-        },
-      ];
-
       mockAchievementService.initializeAchievements.mockResolvedValue(
-        mockAchievements,
+        undefined,
       );
 
-      const result = await controller.initializeAchievements();
+      const result = await controller.initializeAchievements('player-1');
 
-      expect(mockAchievementService.initializeAchievements).toHaveBeenCalled();
+      expect(mockAchievementService.initializeAchievements).toHaveBeenCalledWith(
+        'player-1',
+      );
       expect(result).toEqual({
         message: 'Achievements initialized successfully',
-        achievements: mockAchievements,
+        playerId: 'player-1',
       });
     });
 
@@ -197,9 +183,9 @@ describe('AchievementController', () => {
         mockError,
       );
 
-      await expect(controller.initializeAchievements()).rejects.toThrow(
-        mockError,
-      );
+      await expect(
+        controller.initializeAchievements('player-1'),
+      ).rejects.toThrow(mockError);
     });
   });
 
