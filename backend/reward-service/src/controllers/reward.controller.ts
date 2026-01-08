@@ -22,12 +22,12 @@ export class RewardController {
 
   @Post('assign')
   async assignReward(
-    @Body(ValidationPipe) assignDto: AssignRewardDto,
+    @Body(ValidationPipe) dto: AssignRewardDto,
   ): Promise<Reward> {
     return this.rewardService.assignReward(
-      assignDto.playerId,
-      assignDto.achievementId,
-      assignDto.strategy || 'fixed',
+      dto.playerId,
+      dto.achievementId,
+      dto.strategy || 'fixed',
     );
   }
 
