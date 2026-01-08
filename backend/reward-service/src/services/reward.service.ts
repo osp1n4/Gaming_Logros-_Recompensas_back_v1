@@ -37,18 +37,7 @@ export class RewardService {
     strategyName: string = 'fixed',
   ): Promise<Reward> {
     // Get or create player balance
-    let balance = await this.balanceRepository.findOne({
-      where: { playerId },
-    });
-
-    if (!balance) {
-      balance = this.balanceRepository.create({
-        playerId,
-        totalCoins: 0,
-        totalPoints: 0,
-      });
-      balance = await this.balanceRepository.save(balance);
-    }
+    const balance = await this.getOrCreateBalance(playerId);
 
     // Compute reward using strategy
     const strategy = this.getStrategy(strategyName);
@@ -65,22 +54,12 @@ export class RewardService {
     const savedReward = await this.rewardRepository.save(reward);
 
     // Update balance
-    balance.totalCoins += computation.amount;
-    balance.totalPoints += computation.points;
-    await this.balanceRepository.save(balance);
+    await this.updateBalance(balance, computation.amount, computation.points);
 
     return savedReward;
   }
 
-  async getAllRewards(): Promise<Reward[]> {
-    return this.rewardRepository.find();
-  }
-
-  async getPlayerRewards(playerId: string): Promise<Reward[]> {
-    return this.rewardRepository.find({ where: { playerId } });
-  }
-
-  async getPlayerBalance(playerId: string): Promise<PlayerBalance> {
+  private async getOrCreateBalance(playerId: string): Promise<PlayerBalance> {
     let balance = await this.balanceRepository.findOne({
       where: { playerId },
     });
@@ -95,5 +74,27 @@ export class RewardService {
     }
 
     return balance;
+  }
+
+  private async updateBalance(
+    balance: PlayerBalance,
+    coins: number,
+    points: number,
+  ): Promise<void> {
+    balance.totalCoins += coins;
+    balance.totalPoints += points;
+    await this.balanceRepository.save(balance);
+  }
+
+  async getAllRewards(): Promise<Reward[]> {
+    return this.rewardRepository.find();
+  }
+
+  async getPlayerRewards(playerId: string): Promise<Reward[]> {
+    return this.rewardRepository.find({ where: { playerId } });
+  }
+
+  async getPlayerBalance(playerId: string): Promise<PlayerBalance> {
+    return this.getOrCreateBalance(playerId);
   }
 }
