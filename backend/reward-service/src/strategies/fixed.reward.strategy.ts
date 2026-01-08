@@ -1,6 +1,9 @@
 import { RewardStrategy, RewardComputation } from './reward.strategy';
 import { RewardType } from '../entities/reward.entity';
 
+const FIXED_COINS_AMOUNT = 100;
+const FIXED_POINTS_AMOUNT = 50;
+
 export class FixedRewardStrategy implements RewardStrategy {
   computeReward(
     playerId: string,
@@ -9,8 +12,8 @@ export class FixedRewardStrategy implements RewardStrategy {
   ): RewardComputation {
     return {
       type: RewardType.COINS,
-      amount: 100,
-      points: 50,
+      amount: FIXED_COINS_AMOUNT,
+      points: FIXED_POINTS_AMOUNT,
     };
   }
 }
