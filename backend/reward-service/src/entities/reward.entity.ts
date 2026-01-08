@@ -1,10 +1,38 @@
-// Reward Entity
-// Represents the Reward table in PostgreSQL
-// Fields:
-// - id (UUID primary key)
-// - player_id (UUID foreign key)
-// - achievement_id (UUID foreign key)
-// - reward_type (enum: coins, items, points, badges)
-// - reward_amount (integer)
-// - awarded_at (timestamp)
-// - is_claimed (boolean)
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
+
+export enum RewardType {
+  COINS = 'coins',
+  POINTS = 'points',
+  BADGE = 'badge',
+  ITEM = 'item',
+}
+
+@Entity('rewards')
+@Index(['playerId'])
+@Index(['achievementId'])
+export class Reward {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'player_id', type: 'uuid' })
+  playerId: string;
+
+  @Column({ name: 'achievement_id', type: 'uuid' })
+  achievementId: string;
+
+  @Column({
+    name: 'reward_type',
+    type: 'enum',
+    enum: RewardType,
+  })
+  rewardType: RewardType;
+
+  @Column({ name: 'reward_amount', type: 'int' })
+  rewardAmount: number;
+
+  @CreateDateColumn({ name: 'awarded_at' })
+  awardedAt: Date;
+
+  @Column({ name: 'is_claimed', type: 'boolean', default: false })
+  isClaimed: boolean;
+}
