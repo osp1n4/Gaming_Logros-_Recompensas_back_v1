@@ -263,7 +263,7 @@ Mejorar mantenibilidad y presentación del proyecto.
 - Documentar eventos.
 - Documentar decisiones arquitectónicas.
 - Crear README.
-- Incluir guía de ejecución con Podman.
+- Incluir guía de ejecución con Docker.
 
 ### Entregables
 - Documentación técnica.
@@ -295,7 +295,7 @@ Mejorar mantenibilidad y presentación del proyecto.
 - RabbitMQ
 
 ## Contenedores
-- PDocker
+- Docker
 - Containerfile
 
 ## Arquitectura
