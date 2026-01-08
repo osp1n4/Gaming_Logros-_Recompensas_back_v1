@@ -12,9 +12,12 @@ COPY tsconfig.json ./
 COPY src ./src
 COPY wait-for-it.sh ./
 
+# Make script executable and fix line endings
+RUN chmod +x wait-for-it.sh && \
+    dos2unix wait-for-it.sh || sed -i 's/\r$//' wait-for-it.sh
+
 RUN npm run build
-RUN chmod +x wait-for-it.sh
 
 EXPOSE 3003
 
-CMD ["sh", "-c", "./wait-for-it.sh ${RABBITMQ_HOST:-rabbitmq} ${RABBITMQ_PORT:-5672} npm start"]
+CMD ["sh", "-c", "./wait-for-it.sh ${RABBITMQ_HOST:-rabbitmq} ${RABBITMQ_PORT:-5672} -- npm start"]

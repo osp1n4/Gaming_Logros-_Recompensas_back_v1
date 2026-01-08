@@ -8,8 +8,8 @@ export enum RewardType {
 }
 
 @Entity('rewards')
-@Index(['player_id'])
-@Index(['achievement_id'])
+@Index(['playerId'])
+@Index(['achievementId'])
 export class Reward {
   @PrimaryGeneratedColumn('uuid')
   id: string;
