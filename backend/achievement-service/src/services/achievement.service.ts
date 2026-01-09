@@ -4,6 +4,7 @@ import { AchievementRule } from '../rules/achievement.rule';
 import { PlayerEvent, AchievementEvaluationResult } from '../interfaces/event.interface';
 import { Achievement } from '../entities/achievement.entity';
 import { PlayerAchievement } from '../entities/player.achievement';
+import { EventPublisherService } from './event.publisher';
 
 /**
  * Achievement Service
@@ -17,6 +18,8 @@ export class AchievementService {
     private readonly repository: IAchievementRepository,
     @Inject('ACHIEVEMENT_RULES')
     private readonly rules: AchievementRule[],
+    @Inject('EVENT_PUBLISHER')
+    private readonly eventPublisher: EventPublisherService,
   ) {}
 
   /**
@@ -24,12 +27,20 @@ export class AchievementService {
    * SOLID Principle O: Open/Closed - extensible by adding new rules without modifying this method
    */
   async evaluateEvent(event: PlayerEvent): Promise<AchievementEvaluationResult[]> {
+    console.log(`🔍 Evaluating event for player ${event.playerId}, type: ${event.eventType}, value: ${event.value}`);
+    
+    // Convert event type to uppercase to match database format (MONSTER_KILLED instead of monster_killed)
+    const normalizedEventType = event.eventType.toUpperCase();
+    
     // Find achievements applicable to this event type
-    const achievements = await this.repository.findByEventType(event.eventType);
+    const achievements = await this.repository.findByEventType(normalizedEventType);
+    console.log(`📋 Found ${achievements.length} achievements for event type ${normalizedEventType}`);
+    
     const results: AchievementEvaluationResult[] = [];
 
-    // Get applicable rules for this event type
+    // Get applicable rules for this event type (rules use original format)
     const applicableRules = this.getApplicableRules(event.eventType);
+    console.log(`📜 Found ${applicableRules.length} applicable rules`);
 
     for (const achievement of achievements) {
       const evaluationResults = await this.evaluateAchievementForEvent(
@@ -40,6 +51,7 @@ export class AchievementService {
       results.push(...evaluationResults);
     }
 
+    console.log(`✅ Evaluation complete: ${results.length} results, ${results.filter(r => r.achieved).length} unlocked`);
     return results;
   }
 
@@ -71,6 +83,8 @@ export class AchievementService {
     achievement: Achievement,
     rule: AchievementRule,
   ): Promise<AchievementEvaluationResult | null> {
+    console.log(`🎯 Evaluating rule for achievement: ${achievement.code}`);
+    
     // Get or create player achievement progress
     let playerAchievement = await this.repository.findPlayerAchievement(
       event.playerId,
@@ -78,6 +92,7 @@ export class AchievementService {
     );
 
     if (!playerAchievement) {
+      console.log(`➕ Creating new player achievement for ${achievement.code}`);
       playerAchievement = await this.repository.createPlayerAchievement(
         event.playerId,
         achievement.id,
@@ -87,6 +102,7 @@ export class AchievementService {
 
     // Skip if already unlocked (prevent duplicate progression)
     if (playerAchievement.unlockedAt) {
+      console.log(`⏭️ Skipping ${achievement.code} - already unlocked`);
       return null;
     }
 
@@ -96,6 +112,8 @@ export class AchievementService {
       achievement,
       playerAchievement,
     );
+    
+    console.log(`📊 Rule evaluation for ${achievement.code}: progress=${evaluationResult.progress}, achieved=${evaluationResult.achieved}`);
 
     // Update progress
     const updated = await this.repository.updatePlayerAchievementProgress(
@@ -106,10 +124,25 @@ export class AchievementService {
 
     // Unlock if condition met
     if (evaluationResult.achieved) {
+      console.log(`🎉 Unlocking achievement: ${achievement.code}`);
       const unlocked = await this.repository.unlockPlayerAchievement(
         event.playerId,
         achievement.id,
       );
+      
+      // Publish achievement.unlocked event
+      try {
+        await this.eventPublisher.publishAchievementUnlocked(
+          event.playerId,
+          achievement.id,
+          achievement.code,
+          achievement.rewardPoints,
+        );
+        console.log(`📤 Published achievement.unlocked event for ${achievement.code}`);
+      } catch (error) {
+        console.error('❌ Failed to publish achievement.unlocked event:', error);
+      }
+      
       return {
         playerId: event.playerId,
         achievementId: achievement.id,

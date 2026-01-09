@@ -36,7 +36,7 @@ describe('Contract Tests: Service Communication', () => {
       };
 
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `contract_test_${Date.now()}`,
@@ -51,12 +51,12 @@ describe('Contract Tests: Service Communication', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
 
-      expect(eventResponse.status).toBe(201);
+      expect(eventResponse.status).toBe(200);
       expect(eventResponse.data).toMatchObject(expectedEventStructure);
     });
 
@@ -69,7 +69,7 @@ describe('Contract Tests: Service Communication', () => {
       };
 
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `contract_time_${Date.now()}`,
@@ -84,12 +84,12 @@ describe('Contract Tests: Service Communication', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'TIME_PLAYED',
+          eventType: 'time_played',
           value: 30,
         }
       );
 
-      expect(eventResponse.status).toBe(201);
+      expect(eventResponse.status).toBe(200);
       expect(eventResponse.data).toMatchObject(expectedEventStructure);
     });
   });
@@ -116,7 +116,7 @@ describe('Contract Tests: Service Communication', () => {
   describe('API Response Contracts', () => {
     describe('Player Service API', () => {
       it('should return player with correct structure', async () => {
-        const response = await axios.post(
+        const response = await axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             username: `api_contract_${Date.now()}`,
@@ -160,7 +160,7 @@ describe('Contract Tests: Service Communication', () => {
 
       it('should return player achievements with correct structure', async () => {
         // Create player and initialize achievements
-        const playerResponse = await axios.post(
+        const playerResponse = await axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             username: `achieve_contract_${Date.now()}`,
@@ -190,7 +190,7 @@ describe('Contract Tests: Service Communication', () => {
               code: expect.any(String),
             }),
             progress: expect.any(Number),
-            isUnlocked: expect.any(Boolean),
+            unlockedAt: expect.anything(), // Can be Date or null
           });
         }
       });
@@ -199,7 +199,7 @@ describe('Contract Tests: Service Communication', () => {
     describe('Reward Service API', () => {
       it('should return player balance with correct structure', async () => {
         // Create player
-        const playerResponse = await axios.post(
+        const playerResponse = await axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             username: `reward_contract_${Date.now()}`,
@@ -260,7 +260,7 @@ describe('Contract Tests: Service Communication', () => {
 
     it('should return 400 with correct structure for invalid request', async () => {
       try {
-        await axios.post(
+        await axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             // Missing required fields
@@ -283,7 +283,7 @@ describe('Contract Tests: Service Communication', () => {
       await rabbitMQ.purgeQueue(E2E_CONFIG.rabbitmq.queues.playerEvents);
 
       // Create player and emit event
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `mq_contract_${Date.now()}`,
@@ -297,7 +297,7 @@ describe('Contract Tests: Service Communication', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );

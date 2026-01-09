@@ -50,7 +50,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
     it('should return 400 for invalid player creation', async () => {
       try {
-        await axios.post(
+        await axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             username: '', // Invalid: empty username
@@ -66,7 +66,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
     it('should return 400 for invalid event type', async () => {
       // Create valid player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `error_test_${Date.now()}`,
@@ -92,7 +92,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
     });
 
     it('should return 400 for negative event value', async () => {
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `negative_test_${Date.now()}`,
@@ -107,7 +107,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
           {
             playerId,
-            eventType: 'MONSTER_KILLED',
+            eventType: 'monster_killed',
             value: -5, // Invalid: negative value
           }
         );
@@ -173,7 +173,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
   describe('Idempotency', () => {
     it('should not create duplicate achievements for same event', async () => {
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `idempotent_test_${Date.now()}`,
@@ -193,7 +193,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
           {
             playerId,
-            eventType: 'MONSTER_KILLED',
+            eventType: 'monster_killed',
             value: 1,
           }
         );
@@ -212,7 +212,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
       // Should only have one FIRST_BLOOD achievement entry
       expect(firstBloodAchievements.length).toBe(1);
-      expect(firstBloodAchievements[0].isUnlocked).toBe(true);
+      expect(firstBloodAchievements[0].unlockedAt).toBeTruthy();
 
       // Progress should be cumulative (3 kills)
       expect(firstBloodAchievements[0].progress).toBe(3);
@@ -220,7 +220,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
     it('should not assign duplicate rewards for same achievement', async () => {
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `reward_idempotent_${Date.now()}`,
@@ -239,7 +239,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
@@ -284,7 +284,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
       const concurrentRequests = 5;
 
       const promises = Array.from({ length: concurrentRequests }, (_, i) =>
-        axios.post(
+        axios.put(
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
           {
             username: `concurrent_${Date.now()}_${i}`,
@@ -309,7 +309,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
     it('should handle multiple concurrent events for same player', async () => {
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `concurrent_events_${Date.now()}`,
@@ -330,7 +330,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
           {
             playerId,
-            eventType: 'MONSTER_KILLED',
+            eventType: 'monster_killed',
             value: 1,
           }
         )
@@ -340,7 +340,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
       expect(results.length).toBe(concurrentEvents);
       results.forEach((result) => {
-        expect(result.status).toBe(201);
+        expect(result.status).toBe(200);
       });
 
       // Wait for processing
@@ -357,7 +357,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
 
       // Progress should reflect all events
       expect(firstBlood.progress).toBe(concurrentEvents);
-      expect(firstBlood.isUnlocked).toBe(true);
+      expect(firstBlood.unlockedAt).toBeTruthy();
     });
   });
 
@@ -368,7 +368,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
       await rabbitMQ.purgeQueue(E2E_CONFIG.rabbitmq.queues.achievementUnlocked);
 
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `queue_test_${Date.now()}`,
@@ -387,7 +387,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
@@ -399,7 +399,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
         );
 
         const firstBlood = achievements.data.find(
-          (a: any) => a.achievement.code === 'FIRST_BLOOD' && a.isUnlocked
+          (a: any) => a.achievement.code === 'FIRST_BLOOD' && a.unlockedAt
         );
 
         return !!firstBlood;
@@ -420,7 +420,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
   describe('Data Consistency', () => {
     it('should maintain consistency across all databases', async () => {
       // Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `consistency_${Date.now()}`,
@@ -439,7 +439,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
@@ -457,7 +457,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
       const achievements = await axios.get(
         `${E2E_CONFIG.services.achievement.baseUrl}${E2E_CONFIG.services.achievement.endpoints.playerAchievements}/${playerId}`
       );
-      const unlocked = achievements.data.filter((a: any) => a.isUnlocked);
+      const unlocked = achievements.data.filter((a: any) => a.unlockedAt);
       expect(unlocked.length).toBeGreaterThan(0);
 
       // 3. Reward assigned

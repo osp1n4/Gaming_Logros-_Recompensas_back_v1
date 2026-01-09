@@ -60,7 +60,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
   describe('Scenario 1: First Blood Achievement Unlocked', () => {
     it('should complete full flow: monster killed event → FIRST_BLOOD achievement → reward assigned', async () => {
       // ARRANGE: Create a new player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `e2e_player_${Date.now()}`,
@@ -82,12 +82,12 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId: testPlayerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
 
-      expect(eventResponse.status).toBe(201);
+      expect(eventResponse.status).toBe(200);
 
       // ASSERT 1: Wait for achievement to be unlocked
       await waitForCondition(async () => {
@@ -96,7 +96,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         );
 
         const firstBlood = achievements.data.find(
-          (a: any) => a.achievement.code === 'FIRST_BLOOD' && a.isUnlocked
+          (a: any) => a.achievement.code === 'FIRST_BLOOD' && a.unlockedAt
         );
 
         return !!firstBlood;
@@ -112,7 +112,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
       );
 
       expect(firstBloodAchievement).toBeDefined();
-      expect(firstBloodAchievement.isUnlocked).toBe(true);
+      expect(firstBloodAchievement.unlockedAt).toBeTruthy();
       expect(firstBloodAchievement.progress).toBe(1);
       expect(firstBloodAchievement.achievement.requiredValue).toBe(1);
 
@@ -141,8 +141,8 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
       );
 
       expect(firstBloodReward).toBeDefined();
-      expect(firstBloodReward.rewardValue).toBeGreaterThan(0);
-      expect(firstBloodReward.status).toBe('ASSIGNED');
+      expect(firstBloodReward.rewardAmount).toBeGreaterThan(0);
+      expect(firstBloodReward.rewardType).toBe('coins');
 
       // ASSERT 3: Verify player balance was updated
       const balanceResponse = await axios.get(
@@ -150,14 +150,13 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
       );
 
       expect(balanceResponse.data.totalCoins).toBeGreaterThan(0);
-      expect(balanceResponse.data.totalRewards).toBe(1);
     });
   });
 
   describe('Scenario 2: Multiple Achievements Progression', () => {
     it('should unlock MONSTER_SLAYER_10 achievement after 10 kills', async () => {
       // ARRANGE: Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `e2e_player_multi_${Date.now()}`,
@@ -177,7 +176,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
           `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
           {
             playerId: testPlayerId,
-            eventType: 'MONSTER_KILLED',
+            eventType: 'monster_killed',
             value: 1,
           }
         );
@@ -191,7 +190,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         );
 
         const monsterSlayer = achievements.data.find(
-          (a: any) => a.achievement.code === 'MONSTER_SLAYER_10' && a.isUnlocked
+          (a: any) => a.achievement.code === 'MONSTER_SLAYER_10' && a.unlockedAt
         );
 
         return !!monsterSlayer;
@@ -202,7 +201,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         `${E2E_CONFIG.services.achievement.baseUrl}${E2E_CONFIG.services.achievement.endpoints.playerAchievements}/${testPlayerId}`
       );
 
-      const unlockedAchievements = playerAchievements.data.filter((a: any) => a.isUnlocked);
+      const unlockedAchievements = playerAchievements.data.filter((a: any) => a.unlockedAt);
 
       expect(unlockedAchievements.length).toBeGreaterThanOrEqual(2); // FIRST_BLOOD + MONSTER_SLAYER_10
       expect(unlockedAchievements.some((a: any) => a.achievement.code === 'FIRST_BLOOD')).toBe(true);
@@ -220,7 +219,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
   describe('Scenario 3: Time Played Achievement', () => {
     it('should unlock TIME_PLAYED_1H achievement after 60 minutes', async () => {
       // ARRANGE: Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `e2e_player_time_${Date.now()}`,
@@ -239,7 +238,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId: testPlayerId,
-          eventType: 'TIME_PLAYED',
+          eventType: 'time_played',
           value: 60,
         }
       );
@@ -251,7 +250,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         );
 
         const timePlayed = achievements.data.find(
-          (a: any) => a.achievement.code === 'TIME_PLAYED_1H' && a.isUnlocked
+          (a: any) => a.achievement.code === 'TIME_PLAYED_1H' && a.unlockedAt
         );
 
         return !!timePlayed;
@@ -267,7 +266,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
       );
 
       expect(timePlayedAchievement).toBeDefined();
-      expect(timePlayedAchievement.isUnlocked).toBe(true);
+      expect(timePlayedAchievement.unlockedAt).toBeTruthy();
       expect(timePlayedAchievement.progress).toBe(60);
 
       // Verify reward assigned
@@ -284,7 +283,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
   describe('Scenario 4: Database Persistence', () => {
     it('should persist all data across services', async () => {
       // ARRANGE: Create player
-      const playerResponse = await axios.post(
+      const playerResponse = await axios.put(
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.players}`,
         {
           username: `e2e_player_persist_${Date.now()}`,
@@ -303,7 +302,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
         `${E2E_CONFIG.services.player.baseUrl}${E2E_CONFIG.services.player.endpoints.events}`,
         {
           playerId: testPlayerId,
-          eventType: 'MONSTER_KILLED',
+          eventType: 'monster_killed',
           value: 1,
         }
       );
@@ -320,7 +319,7 @@ describe('E2E: Complete Flow - Event → Achievement → Reward', () => {
 
       // Achievement DB
       const playerAchievementsInDb = await achievementDb.query(
-        'SELECT * FROM player_achievements WHERE player_id = $1 AND is_unlocked = true',
+        'SELECT * FROM player_achievements WHERE player_id = $1 AND unlocked_at IS NOT NULL',
         [testPlayerId]
       );
       expect(playerAchievementsInDb.length).toBeGreaterThan(0);

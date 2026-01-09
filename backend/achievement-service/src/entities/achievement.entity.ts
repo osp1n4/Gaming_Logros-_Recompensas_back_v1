@@ -38,6 +38,9 @@ export class Achievement {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'reward_points', type: 'integer', default: 100 })
+  rewardPoints: number;
+
   @OneToMany(() => PlayerAchievement, playerAchievement => playerAchievement.achievement)
   playerAchievements: PlayerAchievement[];
 

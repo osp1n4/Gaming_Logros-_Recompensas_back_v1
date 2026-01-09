@@ -8,8 +8,8 @@ export const E2E_CONFIG = {
     player: {
       baseUrl: process.env.PLAYER_SERVICE_URL || 'http://localhost:3001',
       endpoints: {
-        players: '/api/players',
-        events: '/api/players/events',
+        players: '/players',
+        events: '/players/events',
       },
     },
     achievement: {
