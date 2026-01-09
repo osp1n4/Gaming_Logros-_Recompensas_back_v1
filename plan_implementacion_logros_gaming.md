@@ -269,15 +269,6 @@ Mejorar mantenibilidad y presentación del proyecto.
 - Documentación técnica.
 - Guía de despliegue.
 
----
-
-## 8️⃣ Fase 7 – Mejoras Futuras (Opcional)
-
-- Escalado horizontal.
-- Nuevos logros dinámicos.
-- Validaciones anti-cheat.
-- API Gateway dedicado.
-- Dashboard de logros.
 
 ---
 

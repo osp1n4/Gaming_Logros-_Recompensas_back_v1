@@ -31,47 +31,44 @@ Sistema de microservicios para gestionar logros y recompensas en juegos, impleme
 🔵 REFACTOR: c0e0f19 - refactor: fix type issues and achieve 82.97% coverage
 ```
 
-## 📋 Estado del Proyecto
+## � Estado Actual (Fase 6 - EN PROGRESO)
 
-### ✅ Fase 2 - Player Service (COMPLETADA)
+### ✅ Fases Completadas
 
-**Fecha de Finalización:** Enero 2026  
-**Cobertura de Tests:** 82.97% ✅ (Objetivo: >70%)  
-**Tests Pasando:** 31/31 ✅  
-**Violaciones SOLID:** 0 ✅
+| Fase | Estado | Cobertura | Tests | Commits |
+|------|--------|-----------|-------|---------|
+| **Fase 2: Player Service** | ✅ COMPLETADA | 96.06% | 43/43 | 🔴→🟢→🔵 |
+| **Fase 3: Achievement Service** | ✅ COMPLETADA | 84.70% | 91/96 | 🔴→🟢→🔵 |
+| **Fase 4: Reward Service** | ✅ COMPLETADA | 76.06% | 36/36 | 🔴→🟢→🔵 |
+| **Fase 5: Integración E2E** | ✅ COMPLETADA | 85.61% | 195/203 | 🔴→🟢→🔵 |
+| **Fase 6: Observabilidad & Docs** | 🟡 EN PROGRESO | - | - | 📋 Planificada |
 
-#### 🎯 Implementación Completada
-
-- ✅ Entidades TypeORM (Player)
-- ✅ DTOs con validación (CreatePlayerDto, GameEventDto)
-- ✅ Repository Pattern con interfaces
-- ✅ Service con lógica de negocio
-- ✅ Event Publisher para RabbitMQ
-- ✅ Controller REST API
-- ✅ Módulos NestJS configurados
-- ✅ Suite completa de tests unitarios
-
-#### 📊 Métricas de Calidad
+### 🎯 Métricas Generales
 
 ```
-Cobertura por Componente:
-- Controllers:   100%
-- DTOs:         100%
-- Entities:     100%
-- Events:       100%
-- Repositories:  95.83%
-- Services:      97.05%
+Cobertura Total:        85.61% ✅ (Objetivo: >70%)
+Tests Pasando:          195/203 (96%) ✅
+E2E Tests:              25/28 (89%) ✅
+SOLID Score:            9.5/10 ✅
+Componentes:            3 Servicios + Shared
+Eventos Documentados:   4 tipos principales
+Base de Datos:          3 instancias PostgreSQL
+Message Broker:         RabbitMQ con AMQP
+Framework:              NestJS 10.0 ✅
 ```
 
-#### 🏗️ Arquitectura
+### 📚 Documentación Completa
 
-El proyecto sigue principios SOLID y Clean Code:
+**Fase 6 ha generado documentación exhaustiva:**
 
-- **S (Single Responsibility)**: Cada clase tiene una única responsabilidad
-- **O (Open/Closed)**: Abierto a extensión, cerrado a modificación
-- **L (Liskov Substitution)**: Uso de interfaces para sustituibilidad
-- **I (Interface Segregation)**: Interfaces específicas (IPlayerRepository, IEventPublisher)
-- **D (Dependency Inversion)**: Dependencia de abstracciones, no concreciones
+- ✅ [GUIA_EJECUCION_DOCKER.md](./backend/GUIA_EJECUCION_DOCKER.md) - Docker setup
+- ✅ [GUIA_EVENTOS.md](./backend/GUIA_EVENTOS.md) - Event types & examples
+- ✅ [ARQUITECTURA.md](./backend/ARQUITECTURA.md) - 10 Architecture Decision Records
+- ✅ [GUIA_DESARROLLO.md](./backend/GUIA_DESARROLLO.md) - Development guide
+- ✅ [DOCUMENTACION.md](./backend/DOCUMENTACION.md) - Documentation index
+- ✅ [DIAGRAMA_ARQUITECTURA.md](./backend/DIAGRAMA_ARQUITECTURA.md) - System diagram
+- ✅ [DIAGRAMA_FLUJO_E2E.md](./backend/DIAGRAMA_FLUJO_E2E.md) - E2E flow diagram
+- ✅ [REPORTE_COBERTURA_CONSOLIDADO.md](./backend/REPORTE_COBERTURA_CONSOLIDADO.md) - Coverage report
 
 ## 🚀 Inicio Rápido
 
@@ -85,19 +82,36 @@ npm run test:cov  # Ver cobertura
 npm run dev       # Modo desarrollo
 ```
 
-## 📦 Stack Tecnológico
+## � Documentación Rápida
 
-### Backend
-- Node.js 20+
-- TypeScript 5.0
-- NestJS 10.0
-- TypeORM
+### Para Diferentes Roles
 
-### Base de Datos
-- PostgreSQL 15
+👨‍💼 **Gerentes/Product Owners:** [Resumen Ejecutivo](./plan_implementacion_logros_gaming.md)  
+👨‍💻 **Desarrolladores:** [Guía Completa](./backend/DOCUMENTACION.md)  
+🧪 **QA/Testers:** [Guía de Ejecución](./backend/GUIA_EJECUCION_DOCKER.md)  
+🏗️ **Arquitectos:** [Decisiones Arquitectónicas](./backend/ARQUITECTURA.md)
 
-### Mensajería
-- RabbitMQ 3.12
+### Documentación Principal (Por Orden de Lectura)
+
+1. **[README.md](README.md)** - Este archivo
+2. **[GUIA_EJECUCION_DOCKER.md](./backend/GUIA_EJECUCION_DOCKER.md)** - Cómo levantar el sistema
+3. **[DIAGRAMA_FLUJO_E2E.md](./backend/DIAGRAMA_FLUJO_E2E.md)** - Flujo completo del sistema
+4. **[GUIA_EVENTOS.md](./backend/GUIA_EVENTOS.md)** - Cómo funcionan los eventos
+5. **[ARQUITECTURA.md](./backend/ARQUITECTURA.md)** - Decisiones técnicas y patrones
+6. **[GUIA_DESARROLLO.md](./backend/GUIA_DESARROLLO.md)** - Cómo contribuir
+7. **[DOCUMENTACION.md](./backend/DOCUMENTACION.md)** - Índice completo y referencias
+
+### Quick Links
+
+| Recurso | Enlace | Descripción |
+|---------|--------|------------|
+| 🐳 Docker Setup | [GUIA_EJECUCION_DOCKER.md](./backend/GUIA_EJECUCION_DOCKER.md) | Levantar servicios en Docker |
+| 📡 Events | [GUIA_EVENTOS.md](./backend/GUIA_EVENTOS.md) | Tipos de eventos y flujos |
+| 🏗️ Architecture | [ARQUITECTURA.md](./backend/ARQUITECTURA.md) | 10 Architecture Decision Records |
+| 👨‍💻 Development | [GUIA_DESARROLLO.md](./backend/GUIA_DESARROLLO.md) | Setup local y contribución |
+| 📊 Coverage | [REPORTE_COBERTURA_CONSOLIDADO.md](./backend/REPORTE_COBERTURA_CONSOLIDADO.md) | Métricas de calidad |
+| 🔄 E2E Flow | [DIAGRAMA_FLUJO_E2E.md](./backend/DIAGRAMA_FLUJO_E2E.md) | Flujo end-to-end |
+| 📑 Index | [DOCUMENTACION.md](./backend/DOCUMENTACION.md) | Índice de toda la documentación |
 
 ### Testing
 - Jest 29.5
