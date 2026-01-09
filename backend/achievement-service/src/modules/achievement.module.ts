@@ -7,7 +7,8 @@ import { AchievementController } from '../controllers/achievement.controller';
 import { AchievementService } from '../services/achievement.service';
 import { AchievementRepository } from '../repositories/achievement.repository';
 import { AchievementEventListener } from '../listeners/achievement.event.listener';
-import { AchievementEventPublisher } from '../publishers/achievement.event.publisher';
+import { EventListenerService } from '../services/event.listener';
+import { EventPublisherService } from '../services/event.publisher';
 import { AchievementRule } from '../rules/achievement.rule';
 import { MonsterKillRule } from '../rules/monster.kill.rule';
 import { TimePlayedRule } from '../rules/time.played.rule';
@@ -70,7 +71,21 @@ import { TimePlayedRule } from '../rules/time.played.rule';
     
     // Event handling
     AchievementEventListener,
-    AchievementEventPublisher,
+    {
+      provide: 'EVENT_LISTENER',
+      useFactory: (achievementEventListener: AchievementEventListener) => {
+        const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
+        return new EventListenerService(rabbitMqUrl, achievementEventListener);
+      },
+      inject: [AchievementEventListener],
+    },
+    {
+      provide: 'EVENT_PUBLISHER',
+      useFactory: () => {
+        const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
+        return new EventPublisherService(rabbitMqUrl);
+      },
+    },
     
     // Achievement rules - all rules available for injection
     MonsterKillRule,
@@ -92,6 +107,8 @@ import { TimePlayedRule } from '../rules/time.played.rule';
     AchievementService,
     AchievementRepository,
     'IAchievementRepository',
+    'EVENT_LISTENER',
+    'EVENT_PUBLISHER',
   ],
 })
 export class AchievementModule {}

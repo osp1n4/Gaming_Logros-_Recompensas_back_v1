@@ -10,7 +10,7 @@ import { AchievementRule } from './achievement.rule';
  * SOLID Principle L: Liskov Substitution - can substitute base AchievementRule
  */
 export class TimePlayedRule extends AchievementRule {
-  private readonly EVENT_TYPE = 'TIME_PLAYED';
+  private readonly EVENT_TYPE = 'time_played';
 
   canApply(eventType: string): boolean {
     return eventType === this.EVENT_TYPE;

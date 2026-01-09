@@ -27,13 +27,18 @@ describe('AchievementService', () => {
       unlockPlayerAchievement: jest.fn(),
     } as any;
 
+    const mockEventPublisher = {
+      publishAchievementUnlocked: jest.fn(),
+    } as any;
+
     monsterKillRule = new MonsterKillRule();
     timePlayedRule = new TimePlayedRule();
 
-    service = new AchievementService(mockRepository, [
-      monsterKillRule,
-      timePlayedRule,
-    ]);
+    service = new AchievementService(
+      mockRepository,
+      [monsterKillRule, timePlayedRule],
+      mockEventPublisher,
+    );
   });
 
   describe('evaluateEvent', () => {

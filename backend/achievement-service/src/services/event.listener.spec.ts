@@ -1,27 +1,27 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventListenerService } from '../../src/services/event.listener';
-import { AchievementUnlockedListener } from '../../src/listeners/achievement.unlocked.listener';
+import { EventListenerService } from './event.listener';
+import { AchievementEventListener } from '../listeners/achievement.event.listener';
 import * as amqp from 'amqplib';
 
 // Mock amqplib
 jest.mock('amqplib');
 
-describe('EventListenerService - RabbitMQ Consumer', () => {
+describe('EventListenerService', () => {
   let service: EventListenerService;
-  let mockAchievementUnlockedListener: jest.Mocked<AchievementUnlockedListener>;
+  let mockAchievementListener: jest.Mocked<AchievementEventListener>;
   let mockConnection: any;
   let mockChannel: any;
 
   beforeEach(async () => {
-    // Mock Achievement Unlocked Listener
-    mockAchievementUnlockedListener = {
-      handleMessage: jest.fn().mockResolvedValue(undefined),
+    // Mock Achievement Event Listener
+    mockAchievementListener = {
+      handlePlayerEventMessage: jest.fn().mockResolvedValue(undefined),
     } as any;
 
     // Mock RabbitMQ Channel
     mockChannel = {
       assertExchange: jest.fn().mockResolvedValue(undefined),
-      assertQueue: jest.fn().mockResolvedValue({ queue: 'reward.achievement-events' }),
+      assertQueue: jest.fn().mockResolvedValue({ queue: 'achievement.player-events' }),
       bindQueue: jest.fn().mockResolvedValue(undefined),
       consume: jest.fn().mockResolvedValue({ consumerTag: 'test-consumer' }),
       ack: jest.fn(),
@@ -40,8 +40,10 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
     (amqp.connect as jest.Mock).mockResolvedValue(mockConnection);
 
     const rabbitMqUrl = 'amqp://localhost:5672';
-    service = new EventListenerService(rabbitMqUrl, mockAchievementUnlockedListener);
+    service = new EventListenerService(rabbitMqUrl, mockAchievementListener);
+  });
 
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -57,7 +59,7 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       await service.connect();
 
       expect(mockChannel.assertExchange).toHaveBeenCalledWith(
-        'achievement.events',
+        'player.events',
         'topic',
         { durable: true },
       );
@@ -67,18 +69,18 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       await service.connect();
 
       expect(mockChannel.assertQueue).toHaveBeenCalledWith(
-        'reward.achievement-events',
+        'achievement.player-events',
         { durable: true },
       );
     });
 
-    it('should bind queue to exchange with routing key', async () => {
+    it('should bind queue to exchange with routing pattern', async () => {
       await service.connect();
 
       expect(mockChannel.bindQueue).toHaveBeenCalledWith(
-        'reward.achievement-events',
-        'achievement.events',
-        'achievement.unlocked',
+        'achievement.player-events',
+        'player.events',
+        'player.event.*',
       );
     });
 
@@ -86,7 +88,7 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       await service.connect();
 
       expect(mockChannel.consume).toHaveBeenCalledWith(
-        'reward.achievement-events',
+        'achievement.player-events',
         expect.any(Function),
         { noAck: false },
       );
@@ -101,7 +103,7 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
   });
 
   describe('message handling', () => {
-    it('should process valid achievement.unlocked messages', async () => {
+    it('should process valid player event messages', async () => {
       let messageHandler: Function;
 
       mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
@@ -114,23 +116,22 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       const mockMessage = {
         content: Buffer.from(
           JSON.stringify({
+            eventType: 'player.event.monster_killed',
             playerId: 'player-1',
-            achievementId: 'ach-1',
-            achievementCode: 'FIRST_KILL',
-            rewardPoints: 100,
+            data: { monsterId: 'monster-1' },
           }),
         ),
         fields: {
-          routingKey: 'achievement.unlocked',
+          routingKey: 'player.event.monster_killed',
         },
       };
 
       await messageHandler!(mockMessage);
 
-      expect(mockAchievementUnlockedListener.handleMessage).toHaveBeenCalledWith(
+      expect(mockAchievementListener.handlePlayerEventMessage).toHaveBeenCalledWith(
         expect.objectContaining({
+          eventType: 'player.event.monster_killed',
           playerId: 'player-1',
-          achievementId: 'ach-1',
         }),
       );
       expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
@@ -147,8 +148,8 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       await service.connect();
 
       const mockMessage = {
-        content: Buffer.from(JSON.stringify({ playerId: 'p1', achievementId: 'a1' })),
-        fields: { routingKey: 'achievement.unlocked' },
+        content: Buffer.from(JSON.stringify({ eventType: 'test.event' })),
+        fields: { routingKey: 'test.event' },
       };
 
       await messageHandler!(mockMessage);
@@ -168,17 +169,17 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
 
       const mockMessage = {
         content: Buffer.from('invalid-json'),
-        fields: { routingKey: 'achievement.unlocked' },
+        fields: { routingKey: 'test.event' },
       };
 
       await messageHandler!(mockMessage);
 
-      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, true);
+      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, false);
     });
 
     it('should nack messages when listener throws error', async () => {
       let messageHandler: Function;
-      mockAchievementUnlockedListener.handleMessage.mockRejectedValueOnce(
+      mockAchievementListener.handlePlayerEventMessage.mockRejectedValueOnce(
         new Error('Processing failed'),
       );
 
@@ -190,8 +191,8 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
       await service.connect();
 
       const mockMessage = {
-        content: Buffer.from(JSON.stringify({ playerId: 'p1', achievementId: 'a1' })),
-        fields: { routingKey: 'achievement.unlocked' },
+        content: Buffer.from(JSON.stringify({ eventType: 'test.event' })),
+        fields: { routingKey: 'test.event' },
       };
 
       await messageHandler!(mockMessage);
@@ -218,13 +219,6 @@ describe('EventListenerService - RabbitMQ Consumer', () => {
 
     it('should handle disconnect when not connected', async () => {
       await expect(service.disconnect()).resolves.not.toThrow();
-    });
-  });
-
-  describe('onModuleInit', () => {
-    it('should have onModuleInit lifecycle method if implemented', () => {
-      // This test checks if the method exists when the class implements OnModuleInit
-      expect(service).toBeDefined();
     });
   });
 });

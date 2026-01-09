@@ -4,6 +4,7 @@ import { AchievementRule } from '../rules/achievement.rule';
 import { PlayerEvent, AchievementEvaluationResult } from '../interfaces/event.interface';
 import { Achievement } from '../entities/achievement.entity';
 import { PlayerAchievement } from '../entities/player.achievement';
+import { EventPublisherService } from './event.publisher';
 
 /**
  * Achievement Service
@@ -17,6 +18,8 @@ export class AchievementService {
     private readonly repository: IAchievementRepository,
     @Inject('ACHIEVEMENT_RULES')
     private readonly rules: AchievementRule[],
+    @Inject('EVENT_PUBLISHER')
+    private readonly eventPublisher: EventPublisherService,
   ) {}
 
   /**
@@ -24,11 +27,14 @@ export class AchievementService {
    * SOLID Principle O: Open/Closed - extensible by adding new rules without modifying this method
    */
   async evaluateEvent(event: PlayerEvent): Promise<AchievementEvaluationResult[]> {
+    // Convert event type to uppercase to match database format (MONSTER_KILLED instead of monster_killed)
+    const normalizedEventType = event.eventType.toUpperCase();
+    
     // Find achievements applicable to this event type
-    const achievements = await this.repository.findByEventType(event.eventType);
+    const achievements = await this.repository.findByEventType(normalizedEventType);
     const results: AchievementEvaluationResult[] = [];
 
-    // Get applicable rules for this event type
+    // Get applicable rules for this event type (rules use original format)
     const applicableRules = this.getApplicableRules(event.eventType);
 
     for (const achievement of achievements) {
@@ -110,6 +116,19 @@ export class AchievementService {
         event.playerId,
         achievement.id,
       );
+      
+      // Publish achievement.unlocked event
+      try {
+        await this.eventPublisher.publishAchievementUnlocked(
+          event.playerId,
+          achievement.id,
+          achievement.code,
+          achievement.rewardPoints,
+        );
+      } catch (error) {
+        console.error('Failed to publish achievement.unlocked event:', error);
+      }
+      
       return {
         playerId: event.playerId,
         achievementId: achievement.id,
