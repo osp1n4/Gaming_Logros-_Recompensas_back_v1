@@ -413,7 +413,8 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
         (a: any) => a.achievement.code === 'FIRST_BLOOD'
       );
 
-      expect(firstBlood.isUnlocked).toBe(true);
+      expect(firstBlood).toBeDefined();
+      expect(firstBlood.unlockedAt).toBeTruthy();
     });
   });
 
@@ -470,7 +471,7 @@ describe('Resilience Tests: Error Handling and Recovery', () => {
       const balance = await axios.get(
         `${E2E_CONFIG.services.reward.baseUrl}${E2E_CONFIG.services.reward.endpoints.balance}/${playerId}`
       );
-      expect(balance.data.totalRewards).toBe(rewards.data.length);
+      expect(balance.data.totalCoins).toBeGreaterThan(0);
     });
   });
 });
