@@ -11,6 +11,13 @@ const APP_PORT = parseInt(process.env.APP_PORT || String(DEFAULT_APP_PORT), 10);
 async function bootstrap() {
   const app = await NestFactory.create(RewardModule);
 
+  // Enable CORS for frontend
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   app.setGlobalPrefix(API_PREFIX);
 
   // Initialize RabbitMQ connection
