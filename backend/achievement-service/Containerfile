@@ -12,8 +12,11 @@ COPY tsconfig.json ./
 COPY src ./src
 COPY wait-for-it.sh ./
 
-RUN npm run build
+# Convert CRLF to LF and set executable permissions
+RUN dos2unix wait-for-it.sh 2>/dev/null || sed -i 's/\r$//' wait-for-it.sh
 RUN chmod +x wait-for-it.sh
+
+RUN npm run build
 
 EXPOSE 3002
 
