@@ -101,11 +101,6 @@ dado que se reciben datos inválidos o se producen errores en el servicio,
 cuando ocurre una validación fallida o error técnico,
 entonces el sistema devuelve códigos HTTP apropiados (400 Bad Request para datos inválidos, 404 Not Found para recursos inexistentes, 409 Conflict para duplicados, 500 Internal Server Error para errores del servidor), incluye mensajes descriptivos en el cuerpo de la respuesta, y registra los errores para trazabilidad.
 
-ac 9: publicación confiable de eventos en rabbitmq
-
-dado que un evento del jugador ha sido validado y procesado exitosamente,
-cuando el sistema intenta publicar el evento en RabbitMQ,
-entonces el evento se publica en la cola correspondiente (player.event.monster_killed o player.event.time_played) con el formato {playerId, eventType, value}, mantiene la conexión activa con el broker, y maneja reconexiones automáticas en caso de fallo de comunicación.
 
 ac 10: cobertura de pruebas automatizadas
 

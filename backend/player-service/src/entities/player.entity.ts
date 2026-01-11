@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 /**
- * Player Entity - Represents a player in the gaming system
- * SOLID Principle S (Single Responsibility): Only handles player data structure
+ * Entidad de Jugador - Representa un jugador en el sistema de juego
+ * Principio SOLID S (Responsabilidad Única): Solo maneja la estructura de datos del jugador
  */
 @Entity('players')
 export class Player {
@@ -19,7 +19,7 @@ export class Player {
   monstersKilled: number;
 
   @Column({ type: 'int', default: 0 })
-  timePlayed: number; // in minutes
+  timePlayed: number; // en minutos
 
   @Column({ default: true })
   isActive: boolean;
