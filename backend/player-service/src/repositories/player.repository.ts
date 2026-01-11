@@ -52,17 +52,7 @@ export class PlayerRepository implements IPlayerRepository {
   }
 
   async update(id: string, username?: string, email?: string): Promise<Player> {
-    const player = await this.findById(id);
-    
-    if (!player) {
-      throw new Error('Player not found');
-    }
-
-    if (username) player.username = username;
-    if (email) player.email = email;
-    
-    return this.repository.save(player);
-  }getPlayerOrThrow(id);
+    const player = await this.getPlayerOrThrow(id);
     
     if (username) player.username = username;
     if (email) player.email = email;
@@ -83,7 +73,8 @@ export class PlayerRepository implements IPlayerRepository {
   private async getPlayerOrThrow(id: string): Promise<Player> {
     const player = await this.findById(id);
     if (!player) {
-      throw new Error('Jugador no encontrado');
+      throw new Error('Player not found');
     }
     return player;
-  
+  }
+}

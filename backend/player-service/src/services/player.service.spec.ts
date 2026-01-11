@@ -236,7 +236,7 @@ describe('PlayerService', () => {
 
       mockRepository.findById.mockResolvedValue(mockPlayer);
 
-      await expect(service.processGameEvent(gameEventDto)).rejects.toThrow('Event value must be positive');
+      await expect(service.processGameEvent(gameEventDto)).rejects.toThrow('El valor del evento debe ser positivo');
     });
   });
 
