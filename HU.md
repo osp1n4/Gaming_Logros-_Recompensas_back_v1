@@ -9,25 +9,6 @@ para desbloquear logros y recibir recompensas que mejoren mi experiencia, incluy
 descripción y contexto:
 El sistema de logros y recompensas busca incrementar la retención y el compromiso de los jugadores a través de un mecanismo automatizado, desacoplado del núcleo del juego, y basado en microservicios y eventos. Una “acción relevante” es cualquier evento del jugador incluido en un catálogo predefinido (por ejemplo, ENEMY_KILLED, MISSION_COMPLETED, TIME_PLAYED). El sistema debe ser capaz de gestionar tanto logros permanentes como logros temporales o basados en eventos específicos, definidos por ventanas de tiempo. La integración depende del motor del juego, que emite los eventos mediante API o colas de mensajes. Además, toda la información de logros y recompensas debe estar internacionalizada para soportar múltiples idiomas, almacenando los textos mediante claves de idioma.
 
-criterios de aceptación (ac):
-
-ac 1: detección y desbloqueo de logros exitoso
-
-dado que el jugador realiza una acción incluida en el catálogo predefinido de acciones relevantes,
-cuando el sistema recibe el evento correspondiente,
-entonces el sistema evalúa si la acción cumple los requisitos de un logro (permanente o temporal), desbloquea el logro y asigna la recompensa correspondiente al jugador.
-
-ac 2: manejo de acciones no relevantes
-
-dado que el jugador realiza una acción que no está en el catálogo de acciones relevantes,
-cuando el sistema recibe el evento,
-entonces el sistema no desbloquea ningún logro ni asigna recompensa, pero registra el evento para trazabilidad.
-
-ac 3: persistencia e internacionalización de logros y recompensas
-
-dado que un logro ha sido desbloqueado y una recompensa asignada,
-cuando el proceso es exitoso,
-entonces el sistema almacena la información del logro y la recompensa, incluyendo las claves de idioma para nombres y descripciones, asegurando su disponibilidad para consultas futuras y visualización multilenguaje.
 
 
 ac 4: visualización de logros y recompensas
@@ -81,7 +62,7 @@ ac 5: eliminación lógica (soft delete) de jugadores
 
 dado que se requiere eliminar un jugador del sistema,
 cuando se envía una solicitud DELETE /players/:id,
-entonces el sistema marca el jugador como inactivo (isActive=false) sin eliminar físicamente el registro, mantiene la integridad histórica de los datos, y devuelve código HTTP 200 o 204.
+entonces el sistema marca el jugador como inactivo (isActive=false) sin eliminar físicamente el registro, mantiene la integridad histórica de los datos, y devuelve código HTTP 204 No Content.
 
 ac 6: consulta de jugadores activos
 
@@ -101,6 +82,11 @@ dado que se reciben datos inválidos o se producen errores en el servicio,
 cuando ocurre una validación fallida o error técnico,
 entonces el sistema devuelve códigos HTTP apropiados (400 Bad Request para datos inválidos, 404 Not Found para recursos inexistentes, 409 Conflict para duplicados, 500 Internal Server Error para errores del servidor), incluye mensajes descriptivos en el cuerpo de la respuesta, y registra los errores para trazabilidad.
 
+ac 9: publicación de eventos en rabbitmq
+
+dado que un evento del jugador ha sido validado y procesado exitosamente,
+cuando el sistema intenta publicar el evento en RabbitMQ,
+entonces el evento se publica en la cola correspondiente (player.event.monster_killed o player.event.time_played) con el formato {playerId, eventType, value, timestamp}, utilizando un exchange 'player.events' de tipo topic con durabilidad, y los mensajes se publican con persistencia habilitada.
 
 ac 10: cobertura de pruebas automatizadas
 
