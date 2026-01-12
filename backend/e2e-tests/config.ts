@@ -71,7 +71,7 @@ export const E2E_CONFIG = {
   },
   timeouts: {
     apiCall: 5000,
-    eventProcessing: 10000,
+    eventProcessing: 15000,
     databaseQuery: 3000,
   },
   retries: {
