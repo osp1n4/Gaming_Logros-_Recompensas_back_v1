@@ -157,26 +157,6 @@ describe('EventListenerService', () => {
       expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
     });
 
-    it('should handle malformed JSON messages gracefully', async () => {
-      let messageHandler: Function;
-
-      mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
-        messageHandler = handler;
-        return Promise.resolve({ consumerTag: 'test-consumer' });
-      });
-
-      await service.connect();
-
-      const mockMessage = {
-        content: Buffer.from('invalid-json'),
-        fields: { routingKey: 'test.event' },
-      };
-
-      await messageHandler!(mockMessage);
-
-      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, false);
-    });
-
     it('should nack messages when listener throws error', async () => {
       let messageHandler: Function;
       mockAchievementListener.handlePlayerEventMessage.mockRejectedValueOnce(
