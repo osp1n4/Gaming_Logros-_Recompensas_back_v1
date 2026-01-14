@@ -17,7 +17,7 @@ Establecer las bases conceptuales y arquitectónicas del proyecto.
 - Definir eventos principales del sistema.
 - Seleccionar patrones de diseño:
   - Observer
-  - Proxy (simplificado)
+  - Strategies
 - Diseñar flujo de datos de alto nivel.
 - Definir modelo de datos inicial.
 
@@ -293,7 +293,6 @@ Mejorar mantenibilidad y presentación del proyecto.
 - Modular Microservicios
 - Event-Driven Architecture
 - Observer Pattern
-- Proxy Pattern (simplificado)
 
 ## Herramientas
 - Git

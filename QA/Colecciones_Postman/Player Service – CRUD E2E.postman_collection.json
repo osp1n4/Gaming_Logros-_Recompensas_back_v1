@@ -1,0 +1,290 @@
+{
+	"info": {
+		"_postman_id": "f8535888-c9c1-4ace-b4e5-ae42bb9f4a31",
+		"name": "Player Service – CRUD E2E",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "51127524",
+		"_collection_link": "https://nevardo-ospina-6494378.postman.co/workspace/Nevardo-Antonio-Ospina-Zu%C3%B1iga's~bf8975b3-4504-4fcb-88a1-ec7e38a35490/collection/51127524-f8535888-c9c1-4ace-b4e5-ae42bb9f4a31?action=share&source=collection_link&creator=51127524"
+	},
+	"item": [
+		{
+			"name": "Create Player",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response is JSON', function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test('JSON schema is valid', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'username', 'email'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            username: { type: 'string', minLength: 3, maxLength: 50 },",
+							"            email: { type: 'string', format: 'email', maxLength: 100 }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"const jsonData = pm.response.json();",
+							"pm.collectionVariables.set('playerId', jsonData.id);",
+							"pm.collectionVariables.set('createdUsername', jsonData.username);",
+							"pm.collectionVariables.set('createdEmail', jsonData.email);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{$randomUserName}}\",\n  \"email\": \"{{$randomEmail}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/players",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Player by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('JSON schema is valid', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'username', 'email'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            username: { type: 'string', minLength: 3, maxLength: 50 },",
+							"            email: { type: 'string', format: 'email', maxLength: 100 }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"pm.test('Username matches created username', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.username).to.eql(pm.collectionVariables.get('createdUsername'));",
+							"});",
+							"",
+							"pm.test('Email matches created email', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.email).to.eql(pm.collectionVariables.get('createdEmail'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/players/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Player",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('JSON schema is valid', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'username', 'email'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            username: { type: 'string', minLength: 3, maxLength: 50 },",
+							"            email: { type: 'string', format: 'email', maxLength: 100 }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"const jsonData = pm.response.json();",
+							"pm.collectionVariables.set('updatedUsername', jsonData.username);",
+							"pm.collectionVariables.set('updatedEmail', jsonData.email);",
+							"",
+							"pm.test('Updated username is different from created username', function () {",
+							"    pm.expect(jsonData.username).to.not.eql(pm.collectionVariables.get('createdUsername'));",
+							"});",
+							"",
+							"pm.test('Updated email is different from created email', function () {",
+							"    pm.expect(jsonData.email).to.not.eql(pm.collectionVariables.get('createdEmail'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{$randomUserName}}\",\n  \"email\": \"{{$randomEmail}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/players/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Player",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 204', function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/players/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Players (After Delete)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response is an array', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Deleted player is not in the list', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const deletedPlayerId = pm.collectionVariables.get('playerId');",
+							"    const playerFound = jsonData.some(player => player.id === deletedPlayerId);",
+							"    pm.expect(playerFound).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/players",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"players"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001"
+		},
+		{
+			"key": "playerId",
+			"value": ""
+		},
+		{
+			"key": "createdUsername",
+			"value": ""
+		},
+		{
+			"key": "createdEmail",
+			"value": ""
+		},
+		{
+			"key": "updatedUsername",
+			"value": ""
+		},
+		{
+			"key": "updatedEmail",
+			"value": ""
+		}
+	]
+}
