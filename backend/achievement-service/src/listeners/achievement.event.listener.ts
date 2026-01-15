@@ -2,30 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { AchievementService } from '../services/achievement.service';
 import { PlayerEvent } from '../interfaces/event.interface';
 
+
 /**
- * SOLID Principles Application:
- * - Single Responsibility: Only handles RabbitMQ event consumption and delegation
- * - Dependency Inversion: Depends on AchievementService abstraction (injected)
- * - Open/Closed: Easy to extend for new event types without modifying this class
+ * Listener de eventos - Observer pattern
+ * Escucha eventos de RabbitMQ y delega evaluación de logros
  */
 @Injectable()
 export class AchievementEventListener {
   constructor(private readonly achievementService: AchievementService) {}
 
   /**
-   * Handles PlayerEvent from RabbitMQ
-   * Evaluates all applicable achievements and returns results
-   *
-   * @param event The player event to process
-   * @returns Array of achievement evaluation results or empty array if no achievements unlocked
+   * Evalúa logros para un evento de jugador
    */
   async handlePlayerEvent(event: PlayerEvent): Promise<any[]> {
     try {
-      // Delegate to service for achievement evaluation
       const results = await this.achievementService.evaluateEvent(event);
       return results;
     } catch (error) {
-      // Log error but don't throw - allow message processing to continue
+      // Log sin lanzar excepción
       console.error(
         `Error processing player event for player ${event.playerId}:`,
         error,
@@ -35,24 +29,15 @@ export class AchievementEventListener {
   }
 
   /**
-   * Handles RabbitMQ message format
-   * Parses message and delegates to handlePlayerEvent
-   *
-   * @param message The message containing PlayerEvent
-   * @returns Array of achievement evaluation results
+   * Procesa mensaje de RabbitMQ (punto de entrada del listener)
    */
   async handlePlayerEventMessage(message: any): Promise<any[]> {
     try {
-      // Parse message to extract PlayerEvent
       const event = this.parsePlayerEvent(message);
-
-      // Validate required fields
       if (!this.isValidEvent(event)) {
-        console.warn('Invalid message format - missing required fields');
+        console.warn('Formato de mensaje inválido - faltan campos requeridos');
         return [];
       }
-
-      // Delegate to handlePlayerEvent for processing
       return await this.handlePlayerEvent(event);
     } catch (error) {
       console.error('Error parsing message:', error);
@@ -61,20 +46,18 @@ export class AchievementEventListener {
   }
 
   /**
-   * Extracts PlayerEvent from message (RabbitMQ format or direct object)
+   * Extrae evento del mensaje RabbitMQ
    * @private
    */
   private parsePlayerEvent(message: any): PlayerEvent {
     if (message.content && typeof message.content.toString === 'function') {
-      // RabbitMQ message format
       return JSON.parse(message.content.toString());
     }
-    // Direct object format (for testing or direct calls)
     return message as PlayerEvent;
   }
 
   /**
-   * Validates that event has required fields
+   * Valida campos requeridos del evento
    * @private
    */
   private isValidEvent(event: PlayerEvent): boolean {

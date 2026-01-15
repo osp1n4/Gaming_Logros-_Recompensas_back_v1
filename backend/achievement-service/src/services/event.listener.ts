@@ -3,11 +3,8 @@ import * as amqp from 'amqplib';
 import { AchievementEventListener } from '../listeners/achievement.event.listener';
 
 /**
- * Event Listener Service (Observer Pattern)
- * SOLID Principles:
- * - S (Single Responsibility): Only handles RabbitMQ consumption
- * - D (Dependency Inversion): Depends on AchievementEventListener abstraction
- * - O (Open/Closed): Can be extended for new event types
+ * Servicio que escucha eventos de RabbitMQ (Observer)
+ * - Solo consume eventos y delega a AchievementEventListener
  */
 @Injectable()
 export class EventListenerService {
@@ -21,44 +18,26 @@ export class EventListenerService {
     private readonly achievementEventListener: AchievementEventListener,
   ) {}
 
+  // Conecta a RabbitMQ y comienza a escuchar eventos
   async connect(): Promise<void> {
     try {
-      console.log('🔌 Connecting to RabbitMQ:', this.rabbitMqUrl);
+      console.log('🔌 Conectando a RabbitMQ:', this.rabbitMqUrl);
       this.connection = await amqp.connect(this.rabbitMqUrl);
       this.channel = await this.connection.createChannel();
-
-      // Assert exchange
-      await this.channel.assertExchange(this.exchangeName, 'topic', {
-        durable: true,
-      });
-
-      // Assert queue
-      await this.channel.assertQueue(this.queueName, {
-        durable: true,
-      });
-
-      // Bind queue to exchange with routing patterns
-      await this.channel.bindQueue(
-        this.queueName,
-        this.exchangeName,
-        'player.event.*',
-      );
-
-      console.log(`✅ Achievement Service listening on queue: ${this.queueName}`);
-
-      // Start consuming messages
+      await this.channel.assertExchange(this.exchangeName, 'topic', { durable: true });
+      await this.channel.assertQueue(this.queueName, { durable: true });
+      await this.channel.bindQueue(this.queueName, this.exchangeName, 'player.event.*');
+      console.log(`✅ Escuchando eventos en la cola: ${this.queueName}`);
       await this.startConsuming();
     } catch (error) {
-      console.error('❌ Failed to connect Achievement Service to RabbitMQ:', error);
+      console.error('❌ Error al conectar a RabbitMQ:', error);
       throw error;
     }
   }
 
+  // Comienza a consumir mensajes de la cola
   private async startConsuming(): Promise<void> {
-    if (!this.channel) {
-      throw new Error('Channel not initialized');
-    }
-
+    if (!this.channel) throw new Error('Canal no inicializado');
     await this.channel.consume(
       this.queueName,
       async (msg: any) => {
@@ -66,17 +45,12 @@ export class EventListenerService {
           try {
             const content = msg.content.toString();
             const event = JSON.parse(content);
-
-            console.log('📥 Received player event:', event);
-
-            // Delegate to achievement event listener
+            console.log('📥 Evento recibido:', event);
+            // Delegar al listener de logros
             await this.achievementEventListener.handlePlayerEventMessage(event);
-
-            // Acknowledge message
             this.channel.ack(msg);
           } catch (error) {
-            console.error('❌ Error processing message:', error);
-            // Reject and requeue message
+            console.error('❌ Error procesando mensaje:', error);
             this.channel.nack(msg, false, true);
           }
         }
@@ -85,17 +59,14 @@ export class EventListenerService {
     );
   }
 
+  // Desconecta de RabbitMQ
   async disconnect(): Promise<void> {
     try {
-      if (this.channel) {
-        await this.channel.close();
-      }
-      if (this.connection) {
-        await this.connection.close();
-      }
-      console.log('🔌 Achievement Service disconnected from RabbitMQ');
+      if (this.channel) await this.channel.close();
+      if (this.connection) await this.connection.close();
+      console.log('🔌 Desconectado de RabbitMQ');
     } catch (error) {
-      console.error('❌ Error disconnecting from RabbitMQ:', error);
+      console.error('❌ Error al desconectar:', error);
     }
   }
 }

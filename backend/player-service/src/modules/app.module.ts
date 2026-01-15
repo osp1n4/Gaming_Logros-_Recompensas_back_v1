@@ -5,17 +5,17 @@ import { PlayerModule } from './player.module';
 import { Player } from '../entities/player.entity';
 
 /**
- * App Module - Root Module
- * SOLID Principle S: Coordinates all application modules
+ * Módulo de Aplicación - Módulo Raíz
+ * Principio SOLID S: Coordina todos los módulos de la aplicación
  */
 @Module({
   imports: [
-    // Environment configuration
+    // Configuración del entorno
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     
-    // Database configuration
+    // Configuración de la base de datos
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -26,13 +26,13 @@ import { Player } from '../entities/player.entity';
         password: configService.get<string>('DB_PASSWORD', 'player_pass'),
         database: configService.get<string>('DB_NAME', 'player_db'),
         entities: [Player],
-        synchronize: configService.get<boolean>('DB_SYNC', true), // Only for development
+        synchronize: configService.get<boolean>('DB_SYNC', true), // Solo para desarrollo
         logging: configService.get<boolean>('DB_LOGGING', false),
       }),
       inject: [ConfigService],
     }),
     
-    // Feature modules
+    // Módulos de características
     PlayerModule,
   ],
 })

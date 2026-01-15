@@ -16,28 +16,90 @@ describe('MonsterKillRule', () => {
   });
 
   describe('canApply', () => {
-    it('should return true for MONSTER_KILLED event type', () => {
-      const achievement: Partial<Achievement> = {
-        eventType: 'MONSTER_KILLED',
-        requiredValue: 10,
-      };
+      it('should return true for monster_killed event type', () => {
+        const result = rule.canApply('monster_killed');
+        expect(result).toBe(true);
+      });
 
-      const result = rule.canApply('MONSTER_KILLED');
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false for other event types', () => {
-      const achievement: Partial<Achievement> = {
-        eventType: 'TIME_PLAYED',
-        requiredValue: 300,
-      };
-
-      const result = rule.canApply('TIME_PLAYED');
-
-      expect(result).toBe(false);
-    });
+      it('should return false for other event types', () => {
+        const result = rule.canApply('time_played');
+        expect(result).toBe(false);
+      });
   });
+
+    describe('evaluate', () => {
+      it('should unlock achievement when required kills reached', async () => {
+        const event: PlayerEvent = {
+          playerId: 'player-1',
+          eventType: 'monster_killed',
+          value: 10,
+        };
+        const achievement: Partial<Achievement> = {
+          id: 'ach-1',
+          code: 'MONSTER_SLAYER',
+          eventType: 'monster_killed',
+          requiredValue: 10,
+          isTemporal: false,
+        };
+        const result = await rule.evaluate(
+          event,
+          achievement as Achievement,
+          null
+        );
+        expect(result.achieved).toBe(true);
+        expect(result.progress).toBe(10);
+      });
+
+      it('should not unlock if already unlocked', async () => {
+        const event: PlayerEvent = {
+          playerId: 'player-1',
+          eventType: 'monster_killed',
+          value: 1,
+        };
+        const achievement: Partial<Achievement> = {
+          id: 'ach-1',
+          code: 'MONSTER_SLAYER',
+          eventType: 'monster_killed',
+          requiredValue: 10,
+          isTemporal: false,
+        };
+        const playerAchievement = {
+          unlockedAt: new Date(),
+          progress: 10,
+        } as PlayerAchievement;
+        const result = await rule.evaluate(
+          event,
+          achievement as Achievement,
+          playerAchievement
+        );
+        expect(result.achieved).toBe(false);
+        expect(result.progress).toBe(10);
+      });
+
+      it('should return progress 0 if not in temporal window', async () => {
+        const event: PlayerEvent = {
+          playerId: 'player-1',
+          eventType: 'monster_killed',
+          value: 1,
+        };
+        const achievement: Partial<Achievement> = {
+          id: 'ach-1',
+          code: 'MONSTER_SLAYER',
+          eventType: 'monster_killed',
+          requiredValue: 10,
+          isTemporal: true,
+          temporalWindowStart: new Date(Date.now() + 100000), // future
+          temporalWindowEnd: new Date(Date.now() + 200000),
+        };
+        const result = await rule.evaluate(
+          event,
+          achievement as Achievement,
+          null
+        );
+        expect(result.achieved).toBe(false);
+        expect(result.progress).toBe(0);
+      });
+    });
 
   describe('evaluate', () => {
     it('should unlock achievement when required kills reached', async () => {

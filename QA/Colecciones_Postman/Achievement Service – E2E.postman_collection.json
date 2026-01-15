@@ -1,0 +1,302 @@
+{
+	"info": {
+		"_postman_id": "42c64b18-b28d-45a1-b695-bc2a8c1c5608",
+		"name": "Achievement Service – E2E",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "51127524",
+		"_collection_link": "https://nevardo-ospina-6494378.postman.co/workspace/Nevardo-Antonio-Ospina-Zu%C3%B1iga's~bf8975b3-4504-4fcb-88a1-ec7e38a35490/collection/51127524-42c64b18-b28d-45a1-b695-bc2a8c1c5608?action=share&source=collection_link&creator=51127524"
+	},
+	"item": [
+		{
+			"name": "Get Achievements",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response is an array', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Each achievement has valid schema', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'code', 'titleKey', 'requiredValue', 'eventType'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            code: { type: 'string' },",
+							"            titleKey: { type: 'string' },",
+							"            descriptionKey: { type: 'string' },",
+							"            requiredValue: { type: 'number' },",
+							"            eventType: { type: 'string', enum: ['MONSTER_KILLED', 'TIME_PLAYED'] }",
+							"        }",
+							"    };",
+							"    jsonData.forEach((item) => {",
+							"        pm.expect(tv4.validate(item, schema)).to.be.true;",
+							"    });",
+							"});",
+							"",
+							"// Search for FIRST_BLOOD achievement and save its id",
+							"const jsonData = pm.response.json();",
+							"const firstBlood = jsonData.find(a => a.code === 'FIRST_BLOOD');",
+							"if (firstBlood) {",
+							"    pm.collectionVariables.set('achievementId', firstBlood.id);",
+							"    console.log('Found FIRST_BLOOD achievement, saved id:', firstBlood.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/achievements",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"achievements"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Initialize Achievements for Player",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has valid schema', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['message', 'playerId'],",
+							"        properties: {",
+							"            message: { type: 'string' },",
+							"            playerId: { type: 'string' }",
+							"        }",
+							"    };",
+							"    pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"pm.test('playerId matches expected value', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.playerId).to.eql(pm.collectionVariables.get('playerId'));",
+							"});",
+							"",
+							"pm.test('Message indicates success', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql('Achievements initialized successfully');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/achievements/initialize/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"achievements",
+						"initialize",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Player Achievements",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response is an array', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Each player achievement has valid schema', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'achievementId', 'achievement'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            achievementId: { type: 'string' },",
+							"            achievement: {",
+							"                type: 'object',",
+							"                required: ['id', 'code', 'titleKey', 'requiredValue', 'eventType'],",
+							"                properties: {",
+							"                    id: { type: 'string' },",
+							"                    code: { type: 'string' },",
+							"                    titleKey: { type: 'string' },",
+							"                    descriptionKey: { type: 'string' },",
+							"                    requiredValue: { type: 'number' },",
+							"                    eventType: { type: 'string', enum: ['MONSTER_KILLED', 'TIME_PLAYED'] }",
+							"                }",
+							"            }",
+							"        }",
+							"    };",
+							"    jsonData.forEach((item) => {",
+							"        pm.expect(tv4.validate(item, schema)).to.be.true;",
+							"    });",
+							"});",
+							"",
+							"pm.test('All elements have correct playerId', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const expectedPlayerId = pm.collectionVariables.get('playerId');",
+							"    jsonData.forEach((item) => {",
+							"        pm.expect(item.playerId).to.eql(expectedPlayerId);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/achievements/players/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"achievements",
+						"players",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific Achievement Progress",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has valid schema', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'achievementId'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            achievementId: { type: 'string' },",
+							"            progress: { type: 'number' },",
+							"            unlockedAt: { type: ['string', 'null'] },",
+							"            createdAt: { type: 'string' }",
+							"        }",
+							"    };",
+							"    pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"pm.test('playerId matches expected value', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.playerId).to.eql(pm.collectionVariables.get('playerId'));",
+							"});",
+							"",
+							"pm.test('achievementId matches expected value', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.achievementId).to.eql(pm.collectionVariables.get('achievementId'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/achievements/players/{{playerId}}/{{achievementId}}/progress",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"achievements",
+						"players",
+						"{{playerId}}",
+						"{{achievementId}}",
+						"progress"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3002/api"
+		},
+		{
+			"key": "playerId",
+			"value": "550e8400-e29b-41d4-a716-446655440000"
+		},
+		{
+			"key": "achievementId",
+			"value": "3d34eb45-7a4c-4b93-aa58-3a28eef8485e"
+		}
+	]
+}

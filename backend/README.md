@@ -79,6 +79,8 @@ backend/
 │   │   ├── dtos/                   # Data Transfer Objects
 │   │   ├── listeners/              # Listeners (Observer pattern)
 │   │   ├── rules/                  # Reglas de evaluación
+│   │   ├── publishers/             # Publicadores de eventos (si aplica)
+│   │   ├── seeds/                  # Semillas de datos para pruebas/catálogo
 │   │   ├── modules/                # Módulos NestJS
 │   │   ├── config/                 # Configuración
 │   │   └── main.ts                 # Entry point
@@ -105,6 +107,13 @@ backend/
 │   ├── Containerfile
 │   ├── .env.example
 │   └── README.md
+│
+├── e2e-tests/                       # Pruebas end-to-end del flujo completo
+│   ├── complete-flow.e2e.spec.ts    # Flujo completo de logros/recompensas
+│   ├── config.ts
+│   ├── helpers.ts
+│   ├── jest.config.js
+│   └── package.json
 │
 ├── infrastructure/                  # Infraestructura
 │   ├── docker/                     # Configuración Docker
@@ -248,6 +257,31 @@ docker-compose logs -f achievement-service
 docker-compose logs -f reward-service
 ```
 
+## 🐳 Construcción de Imágenes Docker
+
+Además de `docker-compose up -d` (que ya construye las imágenes automáticamente porque el `docker-compose.yml` define `build` para cada servicio), puedes construir y ejecutar manualmente las imágenes por servicio si lo prefieres.
+
+### Opción A: Construir todo con Docker Compose
+```bash
+# Construir todas las imágenes
+docker-compose build
+
+# Levantar todos los servicios en segundo plano
+docker-compose up -d
+
+# Ver estado
+docker-compose ps
+```
+### Limpieza
+```bash
+# Parar y eliminar servicios
+docker-compose down
+
+# Parar, eliminar y limpiar volúmenes
+docker-compose down -v
+
+```
+
 ## 🚫 Detener Servicios
 
 ```bash
@@ -256,27 +290,4 @@ docker-compose down
 docker-compose down -v
 ```
 
-## 📝 Próximos Pasos
 
-1. Implementar controladores y servicios
-2. Configurar TypeORM y migraciones
-3. Establecer conexiones RabbitMQ
-4. Implementar lógica de reglas de logros
-5. Agregar estrategias de recompensas
-6. Escribir tests unitarios
-7. Documentar APIs con Swagger
-
-## 📚 Referencias
-
-- [NestJS Documentation](https://docs.nestjs.com)
-- [TypeORM Documentation](https://typeorm.io)
-- [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-
-## 🤝 Contribución
-
-Seguir estructura modular y patrones establecidos. Crear PRs con descripción clara de cambios.
-
-## 📄 Licencia
-
-Este proyecto es parte del Taller Individual "The AI-Native Artisan".

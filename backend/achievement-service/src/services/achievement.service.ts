@@ -7,9 +7,8 @@ import { PlayerAchievement } from '../entities/player.achievement';
 import { EventPublisherService } from './event.publisher';
 
 /**
- * Achievement Service
- * SOLID Principle S: Single Responsibility - Orchestrates rule evaluation and persistence
- * SOLID Principle D: Dependency Inversion - Depends on IAchievementRepository interface
+ * Servicio principal de logros
+ * - Orquesta evaluación de reglas y persistencia
  */
 @Injectable()
 export class AchievementService {
@@ -23,8 +22,7 @@ export class AchievementService {
   ) {}
 
   /**
-   * Evaluate player event against all applicable achievement rules
-   * SOLID Principle O: Open/Closed - extensible by adding new rules without modifying this method
+   * Evalúa un evento de jugador contra todas las reglas de logros
    */
   async evaluateEvent(event: PlayerEvent): Promise<AchievementEvaluationResult[]> {
     // Convert event type to uppercase to match database format (MONSTER_KILLED instead of monster_killed)
@@ -50,7 +48,7 @@ export class AchievementService {
   }
 
   /**
-   * Evaluate a single achievement against all applicable rules
+   * Evalúa un logro contra todas las reglas
    */
   private async evaluateAchievementForEvent(
     event: PlayerEvent,
@@ -70,7 +68,7 @@ export class AchievementService {
   }
 
   /**
-   * Evaluate a specific rule for an achievement
+   * Evalúa una regla específica para un logro
    */
   private async evaluateRuleForAchievement(
     event: PlayerEvent,
@@ -149,15 +147,14 @@ export class AchievementService {
   }
 
   /**
-   * Get applicable rules for an event type
-   * SOLID Principle O: Open/Closed - extensible by adding new rules without modifying service
+   * Obtiene reglas aplicables para un tipo de evento
    */
   private getApplicableRules(eventType: string): AchievementRule[] {
     return this.rules.filter((rule) => rule.canApply(eventType));
   }
 
   /**
-   * Get all achievements for a player with their progress
+   * Retorna todos los logros y progreso de un jugador
    */
   async getPlayerAchievements(
     playerId: string,
@@ -166,7 +163,7 @@ export class AchievementService {
   }
 
   /**
-   * Get progress for a specific achievement
+   * Retorna el progreso de un logro específico
    */
   async getAchievementProgress(
     playerId: string,
@@ -176,8 +173,7 @@ export class AchievementService {
   }
 
   /**
-   * Initialize all achievements for a new player
-   * SOLID Principle L: Liskov Substitution - Different rule types are interchangeable
+   * Inicializa todos los logros para un jugador nuevo
    */
   async initializeAchievements(playerId: string): Promise<void> {
     const allAchievements = await this.repository.findAll();

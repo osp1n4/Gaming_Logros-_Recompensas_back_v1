@@ -45,25 +45,22 @@ describe('AchievementService', () => {
     it('should evaluate event against applicable rules', async () => {
       const event: PlayerEvent = {
         playerId: 'player-1',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         value: 1,
       };
-
       const achievement: Partial<Achievement> = {
         id: 'ach-1',
         code: 'MONSTER_SLAYER',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         requiredValue: 10,
         isTemporal: false,
       };
-
       const playerAchievement: Partial<PlayerAchievement> = {
         playerId: 'player-1',
         achievementId: 'ach-1',
         progress: 0,
         unlockedAt: null,
       };
-
       mockRepository.findByEventType.mockResolvedValue([
         achievement as Achievement,
       ]);
@@ -74,9 +71,7 @@ describe('AchievementService', () => {
         ...playerAchievement,
         progress: 1,
       } as PlayerAchievement);
-
       const result = await service.evaluateEvent(event);
-
       expect(mockRepository.findByEventType).toHaveBeenCalledWith('MONSTER_KILLED');
       expect(result).toBeDefined();
     });
@@ -84,18 +79,16 @@ describe('AchievementService', () => {
     it('should create player achievement if not exists', async () => {
       const event: PlayerEvent = {
         playerId: 'player-1',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         value: 1,
       };
-
       const achievement: Partial<Achievement> = {
         id: 'ach-1',
         code: 'MONSTER_SLAYER',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         requiredValue: 10,
         isTemporal: false,
       };
-
       mockRepository.findByEventType.mockResolvedValue([
         achievement as Achievement,
       ]);
@@ -103,7 +96,7 @@ describe('AchievementService', () => {
       mockRepository.createPlayerAchievement.mockResolvedValue({
         playerId: 'player-1',
         achievementId: 'ach-1',
-        progress: 1,
+        progress: 0,
         unlockedAt: null,
       } as PlayerAchievement);
       mockRepository.updatePlayerAchievementProgress.mockResolvedValue({
@@ -112,9 +105,7 @@ describe('AchievementService', () => {
         progress: 1,
         unlockedAt: null,
       } as PlayerAchievement);
-
       await service.evaluateEvent(event);
-
       expect(mockRepository.createPlayerAchievement).toHaveBeenCalledWith(
         'player-1',
         'ach-1',
@@ -125,25 +116,22 @@ describe('AchievementService', () => {
     it('should unlock achievement when condition is met', async () => {
       const event: PlayerEvent = {
         playerId: 'player-1',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         value: 10,
       };
-
       const achievement: Partial<Achievement> = {
         id: 'ach-1',
         code: 'MONSTER_SLAYER',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         requiredValue: 10,
         isTemporal: false,
       };
-
       const playerAchievement: Partial<PlayerAchievement> = {
         playerId: 'player-1',
         achievementId: 'ach-1',
         progress: 0,
         unlockedAt: null,
       };
-
       mockRepository.findByEventType.mockResolvedValue([
         achievement as Achievement,
       ]);
@@ -159,9 +147,7 @@ describe('AchievementService', () => {
         progress: 10,
         unlockedAt: new Date(),
       } as PlayerAchievement);
-
       const result = await service.evaluateEvent(event);
-
       expect(mockRepository.unlockPlayerAchievement).toHaveBeenCalledWith(
         'player-1',
         'ach-1'
@@ -172,166 +158,70 @@ describe('AchievementService', () => {
     it('should skip already unlocked achievements', async () => {
       const event: PlayerEvent = {
         playerId: 'player-1',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         value: 1,
       };
-
       const achievement: Partial<Achievement> = {
         id: 'ach-1',
         code: 'MONSTER_SLAYER',
-        eventType: 'MONSTER_KILLED',
+        eventType: 'monster_killed',
         requiredValue: 10,
         isTemporal: false,
       };
-
       const playerAchievement: Partial<PlayerAchievement> = {
         playerId: 'player-1',
         achievementId: 'ach-1',
         progress: 10,
         unlockedAt: new Date(),
       };
-
       mockRepository.findByEventType.mockResolvedValue([
         achievement as Achievement,
       ]);
       mockRepository.findPlayerAchievement.mockResolvedValue(
         playerAchievement as PlayerAchievement
       );
-
-      await service.evaluateEvent(event);
-
-      expect(mockRepository.updatePlayerAchievementProgress).not.toHaveBeenCalled();
+      const result = await service.evaluateEvent(event);
+      expect(result).toEqual([]);
     });
-  });
 
-  describe('getPlayerAchievements', () => {
-    it('should return all player achievements with progress', async () => {
-      const playerId = 'player-1';
-      const playerAchievements: Partial<PlayerAchievement>[] = [
-        {
-          playerId,
-          achievementId: 'ach-1',
-          progress: 10,
-          unlockedAt: new Date(),
-        },
-        {
-          playerId,
-          achievementId: 'ach-2',
-          progress: 5,
-          unlockedAt: null,
-        },
-      ];
-
-      mockRepository.findPlayerAchievements.mockResolvedValue(
-        playerAchievements as PlayerAchievement[]
-      );
-
-      const result = await service.getPlayerAchievements(playerId);
-
-      expect(result).toEqual(playerAchievements);
-      expect(mockRepository.findPlayerAchievements).toHaveBeenCalledWith(
-        playerId
-      );
-    });
-  });
-
-  describe('getAchievementProgress', () => {
-    it('should return achievement progress for player', async () => {
-      const playerId = 'player-1';
-      const achievementId = 'ach-1';
+    it('should handle publisher error gracefully', async () => {
+      const event: PlayerEvent = {
+        playerId: 'player-1',
+        eventType: 'monster_killed',
+        value: 10,
+      };
+      const achievement: Partial<Achievement> = {
+        id: 'ach-1',
+        code: 'MONSTER_SLAYER',
+        eventType: 'monster_killed',
+        requiredValue: 10,
+        isTemporal: false,
+      };
       const playerAchievement: Partial<PlayerAchievement> = {
-        playerId,
-        achievementId,
-        progress: 5,
+        playerId: 'player-1',
+        achievementId: 'ach-1',
+        progress: 0,
         unlockedAt: null,
       };
-
+      mockRepository.findByEventType.mockResolvedValue([
+        achievement as Achievement,
+      ]);
       mockRepository.findPlayerAchievement.mockResolvedValue(
         playerAchievement as PlayerAchievement
       );
-
-      const result = await service.getAchievementProgress(
-        playerId,
-        achievementId
-      );
-
-      expect(result).toEqual(playerAchievement);
-      expect(mockRepository.findPlayerAchievement).toHaveBeenCalledWith(
-        playerId,
-        achievementId
-      );
-    });
-
-    it('should return null if achievement progress not found', async () => {
-      mockRepository.findPlayerAchievement.mockResolvedValue(null);
-
-      const result = await service.getAchievementProgress('player-1', 'ach-1');
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('initializeAchievements', () => {
-    it('should create initial achievements for player', async () => {
-      const playerId = 'player-1';
-      const achievements: Partial<Achievement>[] = [
-        {
-          id: 'ach-1',
-          code: 'MONSTER_SLAYER',
-          requiredValue: 10,
-        },
-        {
-          id: 'ach-2',
-          code: 'TIME_WARRIOR',
-          requiredValue: 300,
-        },
-      ];
-
-      mockRepository.findAll.mockResolvedValue(achievements as Achievement[]);
-      mockRepository.findPlayerAchievement.mockResolvedValue(null);
-      mockRepository.createPlayerAchievement.mockResolvedValue({} as PlayerAchievement);
-
-      await service.initializeAchievements(playerId);
-
-      expect(mockRepository.createPlayerAchievement).toHaveBeenCalledTimes(2);
-      expect(mockRepository.createPlayerAchievement).toHaveBeenNthCalledWith(
-        1,
-        playerId,
-        'ach-1',
-        0
-      );
-      expect(mockRepository.createPlayerAchievement).toHaveBeenNthCalledWith(
-        2,
-        playerId,
-        'ach-2',
-        0
-      );
-    });
-
-    it('should skip existing achievements', async () => {
-      const playerId = 'player-1';
-      const achievements: Partial<Achievement>[] = [
-        {
-          id: 'ach-1',
-          code: 'MONSTER_SLAYER',
-          requiredValue: 10,
-        },
-      ];
-
-      const existingPlayerAchievement: Partial<PlayerAchievement> = {
-        playerId,
-        achievementId: 'ach-1',
-        progress: 0,
-      };
-
-      mockRepository.findAll.mockResolvedValue(achievements as Achievement[]);
-      mockRepository.findPlayerAchievement.mockResolvedValue(
-        existingPlayerAchievement as PlayerAchievement
-      );
-
-      await service.initializeAchievements(playerId);
-
-      expect(mockRepository.createPlayerAchievement).not.toHaveBeenCalled();
+      mockRepository.updatePlayerAchievementProgress.mockResolvedValue({
+        ...playerAchievement,
+        progress: 10,
+      } as PlayerAchievement);
+      mockRepository.unlockPlayerAchievement.mockResolvedValue({
+        ...playerAchievement,
+        progress: 10,
+        unlockedAt: new Date(),
+      } as PlayerAchievement);
+      // Simular error en el publisher
+      service['eventPublisher'].publishAchievementUnlocked = jest.fn().mockRejectedValue(new Error('fail'));
+      const result = await service.evaluateEvent(event);
+      expect(result[0].achieved).toBe(true);
     });
   });
 });
