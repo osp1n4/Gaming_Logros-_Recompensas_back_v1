@@ -4,11 +4,11 @@ import { GameEventType } from '../dtos/player.dto';
 import { IEventPublisher } from '../interfaces/event-publisher.interface';
 
 /**
- * Event Publisher Implementation
- * SOLID Principles:
- * - S (Single Responsibility): Only handles event publishing to RabbitMQ
- * - D (Dependency Inversion): Implements IEventPublisher interface
- * - O (Open/Closed): Can be extended without modifying existing code
+ * * Implementación del Publicador de Eventos
+ * Principios SOLID:
+ * - S (Responsabilidad Única): Solo maneja la publicación de eventos a RabbitMQ
+ * - D (Inversión de Dependencias): Implementa la interfaz IEventPublisher
+ * - O (Abierto/Cerrado): Puede ser extendido sin modificar el código existente
  */
 @Injectable()
 export class EventPublisher implements IEventPublisher {

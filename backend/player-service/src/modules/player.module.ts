@@ -8,10 +8,10 @@ import { PlayerRepository } from '../repositories/player.repository';
 import { EventPublisher } from '../events/event.publisher';
 
 /**
- * Player Module
- * SOLID Principles:
- * - S (Single Responsibility): Module handles only player-related components
- * - D (Dependency Inversion): Uses provider tokens for abstractions
+ * Módulo de Jugador
+ * Principios SOLID:
+ * - S (Responsabilidad Única): El módulo maneja solo componentes relacionados con jugadores
+ * - D (Inversión de Dependencias): Usa tokens de proveedor para abstracciones
  */
 @Module({
   imports: [

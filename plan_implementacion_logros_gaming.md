@@ -17,7 +17,7 @@ Establecer las bases conceptuales y arquitectónicas del proyecto.
 - Definir eventos principales del sistema.
 - Seleccionar patrones de diseño:
   - Observer
-  - Proxy (simplificado)
+  - Strategies
 - Diseñar flujo de datos de alto nivel.
 - Definir modelo de datos inicial.
 
@@ -263,21 +263,12 @@ Mejorar mantenibilidad y presentación del proyecto.
 - Documentar eventos.
 - Documentar decisiones arquitectónicas.
 - Crear README.
-- Incluir guía de ejecución con Podman.
+- Incluir guía de ejecución con Docker.
 
 ### Entregables
 - Documentación técnica.
 - Guía de despliegue.
 
----
-
-## 8️⃣ Fase 7 – Mejoras Futuras (Opcional)
-
-- Escalado horizontal.
-- Nuevos logros dinámicos.
-- Validaciones anti-cheat.
-- API Gateway dedicado.
-- Dashboard de logros.
 
 ---
 
@@ -295,14 +286,13 @@ Mejorar mantenibilidad y presentación del proyecto.
 - RabbitMQ
 
 ## Contenedores
-- PDocker
+- Docker
 - Containerfile
 
 ## Arquitectura
 - Modular Microservicios
 - Event-Driven Architecture
 - Observer Pattern
-- Proxy Pattern (simplificado)
 
 ## Herramientas
 - Git

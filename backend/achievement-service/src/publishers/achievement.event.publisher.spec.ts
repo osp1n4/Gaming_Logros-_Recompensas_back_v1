@@ -5,19 +5,19 @@ import { AchievementEvaluationResult } from '../interfaces/event.interface';
 describe('AchievementEventPublisher', () => {
   let publisher: AchievementEventPublisher;
   let mockAmqpConnection: any;
+  let mockChannel: any;
 
   beforeEach(async () => {
-    // Mock AMQP connection
-    mockAmqpConnection = {
-      createChannel: jest.fn(),
-    };
-
-    const mockChannel = {
+    // Mock Channel
+    mockChannel = {
       assertExchange: jest.fn().mockResolvedValue(undefined),
       publish: jest.fn().mockReturnValue(true),
     };
 
-    mockAmqpConnection.createChannel.mockResolvedValue(mockChannel);
+    // Mock AMQP connection
+    mockAmqpConnection = {
+      createChannel: jest.fn().mockResolvedValue(mockChannel),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -32,6 +32,10 @@ describe('AchievementEventPublisher', () => {
     publisher = module.get<AchievementEventPublisher>(AchievementEventPublisher);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('publishAchievementUnlocked', () => {
     it('should publish achievement.unlocked event when achievement is unlocked', async () => {
       const result: AchievementEvaluationResult = {
@@ -42,18 +46,17 @@ describe('AchievementEventPublisher', () => {
         playerId: 'player-1',
       };
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlocked(result);
 
-      expect(channel.assertExchange).toHaveBeenCalledWith(
+      expect(mockAmqpConnection.createChannel).toHaveBeenCalled();
+      expect(mockChannel.assertExchange).toHaveBeenCalledWith(
         'achievement-service',
         'topic',
         { durable: true },
       );
 
-      expect(channel.publish).toHaveBeenCalled();
-      const publishCall = channel.publish.mock.calls[0];
+      expect(mockChannel.publish).toHaveBeenCalled();
+      const publishCall = mockChannel.publish.mock.calls[0];
       expect(publishCall[0]).toBe('achievement-service');
       expect(publishCall[1]).toBe('achievement.unlocked');
 
@@ -74,11 +77,9 @@ describe('AchievementEventPublisher', () => {
         playerId: 'player-1',
       };
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlocked(result);
 
-      expect(channel.publish).not.toHaveBeenCalled();
+      expect(mockChannel.publish).not.toHaveBeenCalled();
     });
 
     it('should handle RabbitMQ connection errors gracefully', async () => {
@@ -108,11 +109,9 @@ describe('AchievementEventPublisher', () => {
         playerId: 'player-456',
       };
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlocked(result);
 
-      const publishCall = channel.publish.mock.calls[0];
+      const publishCall = mockChannel.publish.mock.calls[0];
       const messageData = JSON.parse(publishCall[2].toString());
 
       expect(messageData).toEqual(
@@ -150,12 +149,10 @@ describe('AchievementEventPublisher', () => {
         },
       ];
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlockedBatch(results);
 
       // Only 2 events published (the ones with achieved: true)
-      expect(channel.publish).toHaveBeenCalledTimes(2);
+      expect(mockChannel.publish).toHaveBeenCalledTimes(2);
     });
 
     it('should set correct message options for RabbitMQ', async () => {
@@ -167,11 +164,9 @@ describe('AchievementEventPublisher', () => {
         playerId: 'player-1',
       };
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlocked(result);
 
-      const publishCall = channel.publish.mock.calls[0];
+      const publishCall = mockChannel.publish.mock.calls[0];
       const options = publishCall[3];
 
       expect(options).toEqual(
@@ -191,14 +186,12 @@ describe('AchievementEventPublisher', () => {
         playerId: 'player-1',
       };
 
-      const channel = await mockAmqpConnection.createChannel();
-
       await publisher.publishAchievementUnlocked(result, {
         source: 'achievement-service',
         version: '1.0',
       });
 
-      const publishCall = channel.publish.mock.calls[0];
+      const publishCall = mockChannel.publish.mock.calls[0];
       const messageData = JSON.parse(publishCall[2].toString());
 
       expect(messageData.metadata).toEqual({

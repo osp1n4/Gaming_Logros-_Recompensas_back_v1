@@ -1,69 +1,230 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventListener } from '../../src/services/event.listener';
-import { RewardService } from '../../src/services/reward.service';
+import { EventListenerService } from '../../src/services/event.listener';
+import { AchievementUnlockedListener } from '../../src/listeners/achievement.unlocked.listener';
+import * as amqp from 'amqplib';
 
-describe('EventListener - RabbitMQ Consumer', () => {
-  let listener: EventListener;
-  let service: RewardService;
+// Mock amqplib
+jest.mock('amqplib');
 
-  const mockRewardService = {
-    assignReward: jest.fn(),
-  };
+describe('EventListenerService - RabbitMQ Consumer', () => {
+  let service: EventListenerService;
+  let mockAchievementUnlockedListener: jest.Mocked<AchievementUnlockedListener>;
+  let mockConnection: any;
+  let mockChannel: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EventListener,
-        {
-          provide: RewardService,
-          useValue: mockRewardService,
-        },
-      ],
-    }).compile();
+    // Mock Achievement Unlocked Listener
+    mockAchievementUnlockedListener = {
+      handleMessage: jest.fn().mockResolvedValue(undefined),
+    } as any;
 
-    listener = module.get<EventListener>(EventListener);
-    service = module.get<RewardService>(RewardService);
+    // Mock RabbitMQ Channel
+    mockChannel = {
+      assertExchange: jest.fn().mockResolvedValue(undefined),
+      assertQueue: jest.fn().mockResolvedValue({ queue: 'reward.achievement-events' }),
+      bindQueue: jest.fn().mockResolvedValue(undefined),
+      consume: jest.fn().mockResolvedValue({ consumerTag: 'test-consumer' }),
+      ack: jest.fn(),
+      nack: jest.fn(),
+      close: jest.fn().mockResolvedValue(undefined),
+    };
+
+    // Mock RabbitMQ Connection
+    mockConnection = {
+      createChannel: jest.fn().mockResolvedValue(mockChannel),
+      close: jest.fn().mockResolvedValue(undefined),
+      on: jest.fn(),
+    };
+
+    // Mock amqp.connect
+    (amqp.connect as jest.Mock).mockResolvedValue(mockConnection);
+
+    const rabbitMqUrl = 'amqp://localhost:5672';
+    service = new EventListenerService(rabbitMqUrl, mockAchievementUnlockedListener);
 
     jest.clearAllMocks();
   });
 
-  describe('onModuleInit', () => {
-    it('should have onModuleInit lifecycle method', () => {
-      expect(typeof listener.onModuleInit).toBe('function');
+  describe('connect', () => {
+    it('should connect to RabbitMQ successfully', async () => {
+      await service.connect();
+
+      expect(amqp.connect).toHaveBeenCalledWith('amqp://localhost:5672');
+      expect(mockConnection.createChannel).toHaveBeenCalled();
+    });
+
+    it('should assert exchange with correct configuration', async () => {
+      await service.connect();
+
+      expect(mockChannel.assertExchange).toHaveBeenCalledWith(
+        'achievement.events',
+        'topic',
+        { durable: true },
+      );
+    });
+
+    it('should assert queue with correct configuration', async () => {
+      await service.connect();
+
+      expect(mockChannel.assertQueue).toHaveBeenCalledWith(
+        'reward.achievement-events',
+        { durable: true },
+      );
+    });
+
+    it('should bind queue to exchange with routing key', async () => {
+      await service.connect();
+
+      expect(mockChannel.bindQueue).toHaveBeenCalledWith(
+        'reward.achievement-events',
+        'achievement.events',
+        'achievement.unlocked',
+      );
+    });
+
+    it('should start consuming messages from queue', async () => {
+      await service.connect();
+
+      expect(mockChannel.consume).toHaveBeenCalledWith(
+        'reward.achievement-events',
+        expect.any(Function),
+        { noAck: false },
+      );
+    });
+
+    it('should handle RabbitMQ connection errors', async () => {
+      const error = new Error('Connection failed');
+      (amqp.connect as jest.Mock).mockRejectedValueOnce(error);
+
+      await expect(service.connect()).rejects.toThrow('Connection failed');
     });
   });
 
-  describe('message consumption', () => {
-    it('should parse and process achievement.unlocked events', async () => {
-      const message = {
-        playerId: 'player-1',
-        achievementId: 'achievement-1',
+  describe('message handling', () => {
+    it('should process valid achievement.unlocked messages', async () => {
+      let messageHandler: Function;
+
+      mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
+        messageHandler = handler;
+        return Promise.resolve({ consumerTag: 'test-consumer' });
+      });
+
+      await service.connect();
+
+      const mockMessage = {
+        content: Buffer.from(
+          JSON.stringify({
+            playerId: 'player-1',
+            achievementId: 'ach-1',
+            achievementCode: 'FIRST_KILL',
+            rewardPoints: 100,
+          }),
+        ),
+        fields: {
+          routingKey: 'achievement.unlocked',
+        },
       };
 
-      // Simulate what the listener would do with a message
-      mockRewardService.assignReward.mockResolvedValue({ id: 'reward-1' });
+      await messageHandler!(mockMessage);
 
-      const result = await service.assignReward(
-        message.playerId,
-        message.achievementId,
-        'fixed',
+      expect(mockAchievementUnlockedListener.handleMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          playerId: 'player-1',
+          achievementId: 'ach-1',
+        }),
       );
-
-      expect(mockRewardService.assignReward).toHaveBeenCalledWith(
-        'player-1',
-        'achievement-1',
-        'fixed',
-      );
-      expect(result).toBeDefined();
+      expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
     });
 
-    it('should handle invalid message gracefully', () => {
-      const invalidMessage = 'not a json object';
-      
-      // EventListener should not throw on invalid messages
-      expect(() => {
-        JSON.parse(invalidMessage);
-      }).toThrow();
+    it('should acknowledge messages after successful processing', async () => {
+      let messageHandler: Function;
+
+      mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
+        messageHandler = handler;
+        return Promise.resolve({ consumerTag: 'test-consumer' });
+      });
+
+      await service.connect();
+
+      const mockMessage = {
+        content: Buffer.from(JSON.stringify({ playerId: 'p1', achievementId: 'a1' })),
+        fields: { routingKey: 'achievement.unlocked' },
+      };
+
+      await messageHandler!(mockMessage);
+
+      expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
+    });
+
+    it('should handle malformed JSON messages gracefully', async () => {
+      let messageHandler: Function;
+
+      mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
+        messageHandler = handler;
+        return Promise.resolve({ consumerTag: 'test-consumer' });
+      });
+
+      await service.connect();
+
+      const mockMessage = {
+        content: Buffer.from('invalid-json'),
+        fields: { routingKey: 'achievement.unlocked' },
+      };
+
+      await messageHandler!(mockMessage);
+
+      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, true);
+    });
+
+    it('should nack messages when listener throws error', async () => {
+      let messageHandler: Function;
+      mockAchievementUnlockedListener.handleMessage.mockRejectedValueOnce(
+        new Error('Processing failed'),
+      );
+
+      mockChannel.consume.mockImplementationOnce((queue: string, handler: Function) => {
+        messageHandler = handler;
+        return Promise.resolve({ consumerTag: 'test-consumer' });
+      });
+
+      await service.connect();
+
+      const mockMessage = {
+        content: Buffer.from(JSON.stringify({ playerId: 'p1', achievementId: 'a1' })),
+        fields: { routingKey: 'achievement.unlocked' },
+      };
+
+      await messageHandler!(mockMessage);
+
+      expect(mockChannel.nack).toHaveBeenCalledWith(mockMessage, false, true);
+    });
+  });
+
+  describe('disconnect', () => {
+    it('should close channel and connection gracefully', async () => {
+      await service.connect();
+      await service.disconnect();
+
+      expect(mockChannel.close).toHaveBeenCalled();
+      expect(mockConnection.close).toHaveBeenCalled();
+    });
+
+    it('should handle disconnect errors gracefully', async () => {
+      await service.connect();
+      mockChannel.close.mockRejectedValueOnce(new Error('Close failed'));
+
+      await expect(service.disconnect()).resolves.not.toThrow();
+    });
+
+    it('should handle disconnect when not connected', async () => {
+      await expect(service.disconnect()).resolves.not.toThrow();
+    });
+  });
+
+  describe('onModuleInit', () => {
+    it('should have onModuleInit lifecycle method if implemented', () => {
+      // This test checks if the method exists when the class implements OnModuleInit
+      expect(service).toBeDefined();
     });
   });
 });

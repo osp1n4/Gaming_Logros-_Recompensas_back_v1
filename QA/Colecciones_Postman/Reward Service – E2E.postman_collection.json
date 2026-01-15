@@ -1,0 +1,366 @@
+{
+	"info": {
+		"_postman_id": "f0d82f48-592e-4c9d-b2be-4b036234e5e2",
+		"name": "Reward Service – E2E",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "51127524",
+		"_collection_link": "https://nevardo-ospina-6494378.postman.co/workspace/Nevardo-Antonio-Ospina-Zu%C3%B1iga's~bf8975b3-4504-4fcb-88a1-ec7e38a35490/collection/51127524-f0d82f48-592e-4c9d-b2be-4b036234e5e2?action=share&source=collection_link&creator=51127524"
+	},
+	"item": [
+		{
+			"name": "Get Player Balance (Before)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('JSON schema is valid for PlayerBalance', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'totalCoins', 'totalPoints', 'lastUpdated'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            totalCoins: { type: 'number' },",
+							"            totalPoints: { type: 'number' },",
+							"            lastUpdated: { type: 'string' }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"const jsonData = pm.response.json();",
+							"pm.collectionVariables.set('baselineCoins', jsonData.totalCoins);",
+							"pm.collectionVariables.set('baselinePoints', jsonData.totalPoints);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/rewards/balance/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rewards",
+						"balance",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Assign Reward",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('JSON schema is valid for Reward', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'achievementId', 'rewardType', 'rewardAmount', 'awardedAt', 'isClaimed'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            achievementId: { type: 'string' },",
+							"            rewardType: { type: 'string', enum: ['coins', 'points', 'badge', 'item'] },",
+							"            rewardAmount: { type: 'number' },",
+							"            awardedAt: { type: 'string' },",
+							"            isClaimed: { type: 'boolean' }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"const jsonData = pm.response.json();",
+							"pm.collectionVariables.set('rewardId', jsonData.id);",
+							"pm.collectionVariables.set('rewardAmount', jsonData.rewardAmount);",
+							"pm.collectionVariables.set('rewardType', jsonData.rewardType);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"playerId\": \"{{playerId}}\",\n  \"achievementId\": \"{{achievementId}}\",\n  \"strategy\": \"{{strategy}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/rewards/assign",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rewards",
+						"assign"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Player Rewards",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response is an array', function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Each element matches Reward schema', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'achievementId', 'rewardType', 'rewardAmount', 'awardedAt', 'isClaimed'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            achievementId: { type: 'string' },",
+							"            rewardType: { type: 'string', enum: ['coins', 'points', 'badge', 'item'] },",
+							"            rewardAmount: { type: 'number' },",
+							"            awardedAt: { type: 'string' },",
+							"            isClaimed: { type: 'boolean' }",
+							"        }",
+							"    };",
+							"    const jsonData = pm.response.json();",
+							"    jsonData.forEach((item) => {",
+							"        pm.expect(tv4.validate(item, schema)).to.be.true;",
+							"    });",
+							"});",
+							"",
+							"pm.test('Reward with rewardId exists in array', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const rewardId = pm.collectionVariables.get('rewardId');",
+							"    const found = jsonData.some((reward) => reward.id === rewardId);",
+							"    pm.expect(found).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/rewards/players/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rewards",
+						"players",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Player Balance (After)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('JSON schema is valid for PlayerBalance', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'totalCoins', 'totalPoints', 'lastUpdated'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            totalCoins: { type: 'number' },",
+							"            totalPoints: { type: 'number' },",
+							"            lastUpdated: { type: 'string' }",
+							"        }",
+							"    };",
+							"    pm.response.to.have.jsonSchema(schema);",
+							"});",
+							"",
+							"pm.test('Balance increments are correct for fixed strategy', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const baselineCoins = parseInt(pm.collectionVariables.get('baselineCoins'));",
+							"    const baselinePoints = parseInt(pm.collectionVariables.get('baselinePoints'));",
+							"    const rewardAmount = parseInt(pm.collectionVariables.get('rewardAmount'));",
+							"    ",
+							"    const expectedCoins = baselineCoins + rewardAmount;",
+							"    const expectedPoints = baselinePoints + 50;",
+							"    ",
+							"    pm.expect(jsonData.totalCoins).to.eql(expectedCoins);",
+							"    pm.expect(jsonData.totalPoints).to.eql(expectedPoints);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/rewards/balance/{{playerId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rewards",
+						"balance",
+						"{{playerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Rewards",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response is an array', function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"pm.test('Each element matches Reward schema', function () {",
+							"    const schema = {",
+							"        type: 'object',",
+							"        required: ['id', 'playerId', 'achievementId', 'rewardType', 'rewardAmount', 'awardedAt', 'isClaimed'],",
+							"        properties: {",
+							"            id: { type: 'string' },",
+							"            playerId: { type: 'string' },",
+							"            achievementId: { type: 'string' },",
+							"            rewardType: { type: 'string', enum: ['coins', 'points', 'badge', 'item'] },",
+							"            rewardAmount: { type: 'number' },",
+							"            awardedAt: { type: 'string' },",
+							"            isClaimed: { type: 'boolean' }",
+							"        }",
+							"    };",
+							"    const jsonData = pm.response.json();",
+							"    jsonData.forEach((item) => {",
+							"        pm.expect(tv4.validate(item, schema)).to.be.true;",
+							"    });",
+							"});",
+							"",
+							"pm.test('Reward with rewardId exists in list', function () {",
+							"    const jsonData = pm.response.json();",
+							"    const rewardId = pm.collectionVariables.get('rewardId');",
+							"    const found = jsonData.some((reward) => reward.id === rewardId);",
+							"    pm.expect(found).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/rewards",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"rewards"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3003/api"
+		},
+		{
+			"key": "playerId",
+			"value": "550e8400-e29b-41d4-a716-446655440000"
+		},
+		{
+			"key": "achievementId",
+			"value": "3d34eb45-7a4c-4b93-aa58-3a28eef8485e"
+		},
+		{
+			"key": "strategy",
+			"value": "fixed"
+		},
+		{
+			"key": "baselineCoins",
+			"value": ""
+		},
+		{
+			"key": "baselinePoints",
+			"value": ""
+		},
+		{
+			"key": "rewardId",
+			"value": ""
+		},
+		{
+			"key": "rewardAmount",
+			"value": ""
+		},
+		{
+			"key": "rewardType",
+			"value": ""
+		}
+	]
+}

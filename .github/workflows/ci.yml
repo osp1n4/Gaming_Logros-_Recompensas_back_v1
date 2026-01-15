@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
     
     steps:
       - name: Checkout code
@@ -47,4 +47,88 @@ jobs:
         with:
           files: backend/player-service/coverage/lcov.info
           flags: player-service
+        continue-on-error: true
+
+  achievement-service:
+    name: Achievement Service Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/achievement-service/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: backend/achievement-service
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: backend/achievement-service
+        run: npm test
+      
+      - name: Generate coverage
+        working-directory: backend/achievement-service
+        run: npm run test:cov
+      
+      - name: Build
+        working-directory: backend/achievement-service
+        run: npm run build
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/achievement-service/coverage/lcov.info
+          flags: achievement-service
+        continue-on-error: true
+
+  reward-service:
+    name: Reward Service Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/reward-service/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: backend/reward-service
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: backend/reward-service
+        run: npm test
+      
+      - name: Generate coverage
+        working-directory: backend/reward-service
+        run: npm run test:cov
+      
+      - name: Build
+        working-directory: backend/reward-service
+        run: npm run build
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/reward-service/coverage/lcov.info
+          flags: reward-service
         continue-on-error: true

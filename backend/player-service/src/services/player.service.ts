@@ -5,11 +5,11 @@ import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, GameEventType, PlayerRe
 import { Player } from '../entities/player.entity';
 
 /**
- * Player Service - Business Logic Layer
- * SOLID Principles:
- * - S (Single Responsibility): Handles only player-related business logic
- * - D (Dependency Inversion): Depends on abstractions (interfaces), not concretions
- * - O (Open/Closed): Open for extension, closed for modification
+ * Servicio de Jugador - Capa de Lógica de Negocio
+ * Principios SOLID:
+ * - S (Responsabilidad Única): Maneja solo la lógica de negocio relacionada con jugadores
+ * - D (Inversión de Dependencias): Depende de abstracciones (interfaces), no de concreciones
+ * - O (Abierto/Cerrado): Abierto para extensión, cerrado para modificación
  */
 @Injectable()
 export class PlayerService {
@@ -21,19 +21,19 @@ export class PlayerService {
   ) {}
 
   /**
-   * Registers a new player
-   * Validates uniqueness of username and email
+   * Registra un nuevo jugador
+   * Valida la unicidad del nombre de usuario y correo electrónico
    */
   async registerPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
     const { username, email } = createPlayerDto;
 
-    // Check if username already exists
+    // Verificar si el nombre de usuario ya existe
     const existingUsername = await this.playerRepository.findByUsername(username);
     if (existingUsername) {
-      throw new ConflictException('Username already exists');
+      throw new ConflictException('El nombre de usuario ya existe');
     }
 
-    // Check if email already exists
+    // Verificar si el correo electrónico ya existe
     const existingEmail = await this.playerRepository.findByEmail(email);
     if (existingEmail) {
       throw new ConflictException('Email already exists');
@@ -43,7 +43,7 @@ export class PlayerService {
   }
 
   /**
-   * Retrieves a player by ID
+   * Obtiene un jugador por ID
    */
   async getPlayerById(id: string): Promise<Player> {
     const player = await this.playerRepository.findById(id);
@@ -56,26 +56,26 @@ export class PlayerService {
   }
 
   /**
-   * Processes game events and publishes to RabbitMQ
-   * Implements Proxy pattern for event validation
+   * Procesa eventos de juego y los publica a RabbitMQ
+   * Implementa el patrón Proxy para validación de eventos
    */
   async processGameEvent(gameEventDto: GameEventDto): Promise<Player> {
     const { playerId, eventType, value } = gameEventDto;
 
-    // Validate positive value
+    // Validar que el valor sea positivo
     if (value <= 0) {
-      throw new BadRequestException('Event value must be positive');
+      throw new BadRequestException('El valor del evento debe ser positivo');
     }
 
-    // Verify player exists
+    // Verificar que el jugador existe
     const player = await this.playerRepository.findById(playerId);
     if (!player) {
-      throw new NotFoundException(`Player with id ${playerId} not found`);
+      throw new NotFoundException(`Jugador con id ${playerId} no encontrado`);
     }
 
     let updatedPlayer: Player;
 
-    // Process event based on type
+    // Procesar evento según su tipo
     switch (eventType) {
       case GameEventType.MONSTER_KILLED:
         updatedPlayer = await this.playerRepository.updateMonsterKills(playerId, value);
@@ -87,44 +87,44 @@ export class PlayerService {
         throw new BadRequestException(`Unknown event type: ${eventType}`);
     }
 
-    // Publish event to RabbitMQ
+    // Publicar evento a RabbitMQ
     await this.eventPublisher.publishPlayerEvent(playerId, eventType, value);
 
     return updatedPlayer;
   }
 
   /**
-   * Retrieves all active players
+   * Obtiene todos los jugadores activos
    */
   async getAllPlayers(): Promise<Player[]> {
     return this.playerRepository.findAll();
   }
 
   /**
-   * Updates an existing player
+   * Actualiza un jugador existente
    */
   async updatePlayer(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
     const { username, email } = updatePlayerDto;
 
-    // Verify player exists
+    // Verificar que el jugador existe
     const player = await this.playerRepository.findById(id);
     if (!player) {
-      throw new NotFoundException(`Player with id ${id} not found`);
+      throw new NotFoundException(`Jugador con id ${id} no encontrado`);
     }
 
-    // Check username uniqueness if updating
+    // Verificar unicidad del nombre de usuario si se está actualizando
     if (username && username !== player.username) {
       const existingUsername = await this.playerRepository.findByUsername(username);
       if (existingUsername) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException('El nombre de usuario ya existe');
       }
     }
 
-    // Check email uniqueness if updating
+    // Verificar unicidad del correo electrónico si se está actualizando
     if (email && email !== player.email) {
       const existingEmail = await this.playerRepository.findByEmail(email);
       if (existingEmail) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException('El correo electrónico ya existe');
       }
     }
 
@@ -132,7 +132,7 @@ export class PlayerService {
   }
 
   /**
-   * Deletes a player (soft delete)
+   * Elimina un jugador (eliminación lógica)
    */
   async deletePlayer(id: string): Promise<void> {
     const player = await this.playerRepository.findById(id);

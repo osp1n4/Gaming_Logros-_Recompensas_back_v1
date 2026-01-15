@@ -4,10 +4,10 @@ import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, PlayerResponseDto } fro
 import { Player } from '../entities/player.entity';
 
 /**
- * Player Controller - HTTP Request Handler
- * SOLID Principles:
- * - S (Single Responsibility): Only handles HTTP requests/responses
- * - D (Dependency Inversion): Depends on PlayerService abstraction
+ * Controlador de Jugador - Manejador de Solicitudes HTTP
+ * Principios SOLID:
+ * - S (Responsabilidad Única): Solo maneja solicitudes/respuestas HTTP
+ * - D (Inversión de Dependencias): Depende de la abstracción PlayerService
  */
 @Controller('players')
 export class PlayerController {
@@ -15,7 +15,7 @@ export class PlayerController {
 
   /**
    * PUT /players
-   * Register a new player
+   * Registra un nuevo jugador
    */
   @Put()
   @HttpCode(HttpStatus.CREATED)
@@ -27,7 +27,7 @@ export class PlayerController {
 
   /**
    * GET /players/:id
-   * Get player information by ID
+   * Obtiene información del jugador por ID
    */
   @Get(':id')
   async getPlayer(@Param('id') id: string): Promise<Player> {

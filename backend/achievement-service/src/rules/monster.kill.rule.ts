@@ -10,7 +10,7 @@ import { AchievementRule } from './achievement.rule';
  * SOLID Principle L: Liskov Substitution - can substitute base AchievementRule
  */
 export class MonsterKillRule extends AchievementRule {
-  private readonly EVENT_TYPE = 'MONSTER_KILLED';
+  private readonly EVENT_TYPE = 'monster_killed';
 
   canApply(eventType: string): boolean {
     return eventType === this.EVENT_TYPE;

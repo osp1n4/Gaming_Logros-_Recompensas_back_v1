@@ -4,7 +4,6 @@ import { AchievementController } from '../controllers/achievement.controller';
 import { AchievementService } from '../services/achievement.service';
 import { AchievementRepository } from '../repositories/achievement.repository';
 import { AchievementEventListener } from '../listeners/achievement.event.listener';
-import { AchievementEventPublisher } from '../publishers/achievement.event.publisher';
 import { MonsterKillRule } from '../rules/monster.kill.rule';
 import { TimePlayedRule } from '../rules/time.played.rule';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -99,12 +98,9 @@ describe('AchievementModule', () => {
       expect(listener).toBeInstanceOf(AchievementEventListener);
     });
 
-    it('should provide AchievementEventPublisher', () => {
-      const publisher = module.get<AchievementEventPublisher>(
-        AchievementEventPublisher,
-      );
+    it('should provide EVENT_PUBLISHER', () => {
+      const publisher = module.get('EVENT_PUBLISHER');
       expect(publisher).toBeDefined();
-      expect(publisher).toBeInstanceOf(AchievementEventPublisher);
     });
 
     it('should provide MonsterKillRule', () => {

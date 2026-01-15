@@ -2,11 +2,11 @@ import { Injectable, Inject } from '@nestjs/common';
 import { AchievementEvaluationResult } from '../interfaces/event.interface';
 
 /**
- * Achievement Event Publisher
- * SOLID Principles Application:
- * - Single Responsibility: Only publishes achievement.unlocked events to RabbitMQ
- * - Dependency Inversion: Depends on AMQP_CONNECTION injection token
- * - Open/Closed: Easy to extend for new event types without modifying this class
+ * Publicador de eventos de logro
+ * Aplicación de principios SOLID:
+ * - Responsabilidad Única: Solo publica eventos achievement.unlocked a RabbitMQ
+ * - Inversión de Dependencias: Depende del token de inyección AMQP_CONNECTION
+ * - Abierto/Cerrado: Fácil de extender para nuevos tipos de eventos sin modificar esta clase
  */
 @Injectable()
 export class AchievementEventPublisher {
@@ -20,36 +20,36 @@ export class AchievementEventPublisher {
   ) {}
 
   /**
-   * Publish achievement.unlocked event to RabbitMQ
-   * Only publishes if achievement was actually unlocked (achieved: true)
+   * Publica evento achievement.unlocked en RabbitMQ
+   * Solo publica si el logro fue realmente desbloqueado (achieved: true)
    *
-   * @param result Achievement evaluation result
-   * @param metadata Optional metadata to include in event
+   * @param result Resultado de la evaluación del logro
+   * @param metadata Metadatos opcionales para incluir en el evento
    */
   async publishAchievementUnlocked(
     result: AchievementEvaluationResult,
     metadata?: Record<string, any>,
   ): Promise<void> {
     try {
-      // Only publish if achievement was unlocked
+      // Solo publicar si el logro fue desbloqueado
       if (!result.achieved) {
         return;
       }
 
-      // Build and publish event
+      // Construir y publicar evento
       const event = this.buildAchievementUnlockedEvent(result, metadata);
       await this.publishToExchange(event);
     } catch (error) {
-      // Log error but don't throw - allow service to continue
+      // Registrar error pero no lanzar - permitir que el servicio continúe
       console.error('Error publishing achievement.unlocked event:', error);
     }
   }
 
   /**
-   * Batch publish multiple achievement.unlocked events
+   * Publica en lote múltiples eventos achievement.unlocked
    *
-   * @param results Array of achievement evaluation results
-   * @param metadata Optional metadata to include in each event
+   * @param results Array de resultados de evaluación de logros
+   * @param metadata Metadatos opcionales para incluir en cada evento
    */
   async publishAchievementUnlockedBatch(
     results: AchievementEvaluationResult[],
@@ -61,7 +61,7 @@ export class AchievementEventPublisher {
   }
 
   /**
-   * Build achievement.unlocked event message
+   * Construye el mensaje de evento achievement.unlocked
    * @private
    */
   private buildAchievementUnlockedEvent(
@@ -91,12 +91,12 @@ export class AchievementEventPublisher {
   private async publishToExchange(event: Record<string, any>): Promise<void> {
     const channel = await this.amqpConnection.createChannel();
 
-    // Ensure exchange exists
+    // Asegurar que el exchange existe
     await channel.assertExchange(this.EXCHANGE_NAME, this.EXCHANGE_TYPE, {
       durable: true,
     });
 
-    // Publish message to exchange
+    // Publicar mensaje en el exchange
     channel.publish(
       this.EXCHANGE_NAME,
       this.ROUTING_KEY,

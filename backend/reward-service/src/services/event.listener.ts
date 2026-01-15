@@ -1,71 +1,100 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { RewardService } from './reward.service';
+import { Injectable } from '@nestjs/common';
 import * as amqp from 'amqplib';
+import { AchievementUnlockedListener } from '../listeners/achievement.unlocked.listener';
 
-interface AchievementUnlockedEvent {
-  playerId: string;
-  achievementId: string;
-  timestamp?: string;
-}
-
+/**
+ * Event Listener Service for Reward Service
+ * SOLID Principles:
+ * - S (Single Responsibility): Only handles RabbitMQ consumption
+ * - D (Dependency Inversion): Depends on AchievementUnlockedListener abstraction
+ */
 @Injectable()
-export class EventListener implements OnModuleInit {
-  private readonly logger = new Logger(EventListener.name);
-  private connection: any;
-  private channel: any;
-  private readonly queueName = 'achievement.unlocked';
-  private readonly rabbitmqUrl = `amqp://${process.env.RABBITMQ_USER || 'guest'}:${
-    process.env.RABBITMQ_PASSWORD || 'guest'
-  }@${process.env.RABBITMQ_HOST || 'rabbitmq'}:${process.env.RABBITMQ_PORT || 5672}`;
+export class EventListenerService {
+  private connection: any = null;
+  private channel: any = null;
+  private readonly exchangeName = 'achievement.events';
+  private readonly queueName = 'reward.achievement-events';
 
-  constructor(private readonly rewardService: RewardService) {}
+  constructor(
+    private readonly rabbitMqUrl: string,
+    private readonly achievementUnlockedListener: AchievementUnlockedListener,
+  ) {}
 
-  async onModuleInit(): Promise<void> {
+  async connect(): Promise<void> {
     try {
-      await this.connect();
+      console.log('🔌 Connecting Reward Service to RabbitMQ:', this.rabbitMqUrl);
+      this.connection = await amqp.connect(this.rabbitMqUrl);
+      this.channel = await this.connection.createChannel();
+
+      // Assert exchange
+      await this.channel.assertExchange(this.exchangeName, 'topic', {
+        durable: true,
+      });
+
+      // Assert queue
+      await this.channel.assertQueue(this.queueName, {
+        durable: true,
+      });
+
+      // Bind queue to exchange with routing key
+      await this.channel.bindQueue(
+        this.queueName,
+        this.exchangeName,
+        'achievement.unlocked',
+      );
+
+      console.log(`✅ Reward Service listening on queue: ${this.queueName}`);
+
+      // Start consuming messages
       await this.startConsuming();
     } catch (error) {
-      this.logger.error('Failed to initialize event listener', error);
-      // Retry after delay
-      setTimeout(() => this.onModuleInit(), 5000);
+      console.error('❌ Failed to connect Reward Service to RabbitMQ:', error);
+      throw error;
     }
   }
 
-  private async connect(): Promise<void> {
-    this.connection = await amqp.connect(this.rabbitmqUrl);
-    this.channel = await this.connection.createChannel();
-    this.logger.log('Connected to RabbitMQ');
-  }
-
   private async startConsuming(): Promise<void> {
-    await this.channel.assertQueue(this.queueName);
-    this.logger.log(`Listening for messages on queue ${this.queueName}`);
+    if (!this.channel) {
+      throw new Error('Channel not initialized');
+    }
 
     await this.channel.consume(
       this.queueName,
       async (msg: any) => {
-        if (!msg) return;
-        await this.handleMessage(msg);
+        if (msg) {
+          try {
+            const content = msg.content.toString();
+            const event = JSON.parse(content);
+
+            console.log('📥 Received achievement.unlocked event:', event);
+
+            // Delegate to listener
+            await this.achievementUnlockedListener.handleMessage(event);
+
+            // Acknowledge message
+            this.channel.ack(msg);
+          } catch (error) {
+            console.error('❌ Error processing message:', error);
+            // Reject and requeue message
+            this.channel.nack(msg, false, true);
+          }
+        }
       },
+      { noAck: false },
     );
   }
 
-  private async handleMessage(msg: any): Promise<void> {
+  async disconnect(): Promise<void> {
     try {
-      const event: AchievementUnlockedEvent = JSON.parse(msg.content.toString());
-      this.logger.log(`Received event: ${JSON.stringify(event)}`);
-
-      await this.rewardService.assignReward(
-        event.playerId,
-        event.achievementId,
-        'fixed',
-      );
-
-      this.channel.ack(msg);
-      this.logger.log('Event processed successfully');
+      if (this.channel) {
+        await this.channel.close();
+      }
+      if (this.connection) {
+        await this.connection.close();
+      }
+      console.log('🔌 Reward Service disconnected from RabbitMQ');
     } catch (error) {
-      this.logger.error('Error processing event', error);
-      this.channel.nack(msg, false, true);
+      console.error('❌ Error disconnecting from RabbitMQ:', error);
     }
   }
 }
